@@ -4,6 +4,8 @@
 # GitHub: https://github.com/RaptorXilef/MinecraftLogFilterScript
 # REM Lizens: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
 
+# Aktuelle Skriptversion
+$minecraftLogFilterScriptVersion = "0.0.1"
 
 # Pfad zur Konfigurationsdatei
 $configFolder = "MinecraftLogFilter\"
