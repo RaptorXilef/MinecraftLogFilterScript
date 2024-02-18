@@ -15,10 +15,12 @@ MinecraftLogFilter/
 
 #-------------------------------------------------------------------------------
 # My notes and test-folder
-history_of_instable_tests_(privat)/
-notes_(privat)/
-history_of_stable_tests_(privat)/
 backups_stable_versions_(privat)/
+backups_instable_versions_(privat)/
+backups_stable_tests_(privat)
+test_new_things_(privat)/
+notes_(privat)/
+
 
 # https://docs.github.com/de/get-started/getting-started-with-git/ignoring-files
 # https://www.toptal.com/developers/gitignore
