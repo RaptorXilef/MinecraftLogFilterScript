@@ -1,0 +1,57 @@
+# Created by https://www.toptal.com/developers/gitignore/api/powershell
+# Edit at https://www.toptal.com/developers/gitignore?templates=powershell
+
+### PowerShell ###
+# Exclude packaged modules
+*.zip
+
+# Exclude .NET assemblies from source
+*.dll
+
+# End of https://www.toptal.com/developers/gitignore/api/powershell
+
+#-------------------------------------------------------------------------------
+# My notes and test-folder
+Testordner/
+Notizen/
+Verlauf/
+Backups/
+
+#-------------------------------------------------------------------------------
+# Windows
+
+#-- image file cache
+Thumbs.db
+
+#-- Folder config file
+Desktop.ini
+folder-*.ico
+
+#-- Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+
+#-------------------------------------------------------------------------------
+# Mac
+
+*~
+*.lock
+*.DS_Store
+*.swp
+*.out
+scintilla/.hgeol
+scintilla/.hgtags
+scintilla/cppcheck.suppress
+scintilla/.hg_archival.txt
+scintilla/.hgignore
+scintilla/bin/__init__.py
+PowerEditor/bin/NppShell64_06.dll
+PowerEditor/bin/NppShell_06.dll
+
+PowerEditor/bin/SourceCodePro-Bold.ttf
+PowerEditor/bin/SourceCodePro-BoldIt.ttf
+PowerEditor/bin/SourceCodePro-It.ttf
+PowerEditor/bin/SourceCodePro-Regular.ttf
+*.zip
+
+#-------------------------------------------------------------------------------
