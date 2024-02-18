@@ -311,7 +311,7 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
                 foreach ($keyword in $config.keywords) {
                     if ($_ -match $keyword) {
                         $counter[$keyword]++
-                        $line | Out-File -Append "$outputDirectory\$keyword.txt" -Encoding utf8
+                        $line | Out-File -Append "$outputDirectory\$keyword.log" -Encoding utf8
                     }
                 }
             }
