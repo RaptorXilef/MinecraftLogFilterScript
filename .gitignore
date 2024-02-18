@@ -10,12 +10,18 @@
 
 # End of https://www.toptal.com/developers/gitignore/api/powershell
 
+# Created Folders from the Skript
+MinecraftLogFilter/
+
 #-------------------------------------------------------------------------------
 # My notes and test-folder
 Testordner/
 Notizen/
 Verlauf/
 Backups/
+
+# https://docs.github.com/de/get-started/getting-started-with-git/ignoring-files
+# https://www.toptal.com/developers/gitignore
 
 #-------------------------------------------------------------------------------
 # Windows
