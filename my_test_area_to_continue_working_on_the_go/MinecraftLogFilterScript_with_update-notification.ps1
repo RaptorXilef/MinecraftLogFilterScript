@@ -200,21 +200,21 @@ if (-not (Test-Path $configFile -PathType Leaf)) {
     # Sprachauswahl abfragen und prüfen, ob die Auswahl gültig ist
     $selectedLang = $null
     do {
-        cls
+        Clear-Host
         Write-Host "Please select your language / Bitte wählen Sie Ihre Sprache:" -ForegroundColor Yellow
         for ($i=0; $i -lt $availableLanguages.Count; $i++) {
             Write-Host "$i. $($availableLanguages[$i])" -ForegroundColor Cyan
         }
         Write-Host ""
         Write-Host "Enter the number / Geben Sie die Nummer ein"
-        $input = Read-Host "and confirm the number with Enter.  / und bestätigen Sie die Nummer mit Enter. "
-        if ($input -ge 0 -and $input -lt $availableLanguages.Count) {
-            $selectedLang = $availableLanguages[$input]
+        $userInput = Read-Host "and confirm the number with Enter.  / und bestätigen Sie die Nummer mit Enter. "
+        if ($userInput -ge 0 -and $userInput -lt $availableLanguages.Count) {
+            $selectedLang = $availableLanguages[$userInput]
         } else {
             Write-Host "Invalid selection. / Ungültige Auswahl." -ForegroundColor Red
             Start-Sleep -Seconds 1
         }
-    } while ($selectedLang -eq $null)
+    } while (null -eq $$selectedLang)
 
     # Konfigurationsdatei mit ausgewählter Sprache erstellen
     $defaultConfig = @"
@@ -271,13 +271,13 @@ $lang = $config.lang
 $selectedLangConfig = if ($lang -eq "de") { $langDEConfig } else { $langENConfig }
 
     # Ausgabe der Meldung im Konsolenfenster
-    cls
+    Clear-Host
     Write-Host "$($selectedLangConfig.configCreatedMessage -f $configFile)" -ForegroundColor Yellow
     Write-Host $selectedLangConfig.configEditMessage -ForegroundColor Yellow
     Write-Host ""
     Write-Host $selectedLangConfig.pressAnyKeyContinueMessage -ForegroundColor Red
     [void][System.Console]::ReadKey() # Warten auf Tastendruck
-    cls
+    Clear-Host
     & $MyInvocation.MyCommand.Path # Skript erneut starten
 }
 
@@ -303,7 +303,7 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
     New-Item -ItemType Directory -Path $processedFolder -Force | Out-Null
 
     # Ausgabe der Meldung im Konsolenfenster
-    cls
+    Clear-Host
     Write-Host ($selectedLangConfig.foldersCreatedMessage -f $sourceFolder) -ForegroundColor White
     Write-Host " - $sourceFolder" -ForegroundColor Green  # Diese Zeile hinzufügen
     Write-Host " - $processedFolder" -ForegroundColor Green
@@ -313,7 +313,7 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
     Write-Host ""
     Write-Host $selectedLangConfig.pressAnyKeyContinueMessage -ForegroundColor Red
     [void][System.Console]::ReadKey() # Warten auf Tastendruck
-    cls
+    Clear-Host
     & $MyInvocation.MyCommand.Path # Skript erneut starten
 } else {
     # Erfassen aller Dateien im $sourceFolder
@@ -322,7 +322,7 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
     $sourceFiles = $sourceFiles | Where-Object { $_.Extension -eq ".log" }
     if ($sourceFiles.Count -eq 0) {
         # Ausgabe der Meldung im Konsolenfenster
-        cls
+        Clear-Host
         Write-Host "$($selectedLangConfig.filesNotFoundMessage -f $sourceFolder)" -ForegroundColor White
         Write-Host " -> $sourceFolder" -ForegroundColor Cyan
         Write-Host ""
@@ -330,7 +330,7 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
         Write-Host ""
         Write-Host $selectedLangConfig.pressAnyKeyContinueMessage -ForegroundColor Red
         [void][System.Console]::ReadKey() # Warten auf Tastendruck
-        cls
+        Clear-Host
         & $MyInvocation.MyCommand.Path # Skript erneut starten
     } else {
         # Prüfen, ob $outputFolder existiert
@@ -346,7 +346,7 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
         }
 
         # Meldung vor dem Verarbeiten der Log-Dateien anzeigen
-        cls
+        Clear-Host
         Write-Host $selectedLangConfig.processingLogsMessage -ForegroundColor Yellow
         Write-Host $selectedLangConfig.pleaseWaitMessage -ForegroundColor Yellow
         Write-Host ""
