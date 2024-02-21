@@ -1,3 +1,4 @@
+$currentVersion = "v0.0.2"
 <#
 .SYNOPSIS
 Das Minecraft Log Filter Script ist ein PowerShell-Skript, das die Filterung und Verarbeitung von Minecraft-Server-Logdateien automatisiert.
@@ -19,6 +20,95 @@ Autor: RaptorXilef
 GitHub: https://github.com/raptorxilef/MinecraftLogFilterScript
 Lizenz: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
 #>
+# ToDo 1. Mit "Visual Studio Code" gefundene Fehler beseitigen
+# ToDo 2. Code nach konvention strukturieren und in Formeln aufgliedern
+# ToDo 3. NAch update suchen, bevor eine config.yml existiert, wenn existiert erst:
+# ToDo     Updatefunktion am Ende des Skripts ausführen, nach der Ausgabe der gefilterten Daten
+# Todo 4. Funktion einbauen, in Config die Updates zu deaktivieren. 
+
+
+
+
+function CheckIfUpdateIsAvailable{
+    param (
+# Parameter
+$currentVersion = "v0.0.9"
+$repoOwner = "RaptorXilef"
+$repoName = "MinecraftLogFilterScript"
+
+
+    )
+
+    # Prüfen, ob die Config-Datei existiert, wenn nicht, prüfte auf Updates, bevor der restliche Code ausgeführt wird. 
+    if (-not (Test-Path $configFile -PathType Leaf)) {
+        
+
+
+
+
+
+
+
+    }
+
+}
+
+# Definition der Funktion Get-LatestVersionFromGitHub zum abrufen der Versionsnummer aus tag_name von GitHub
+# Definition of the Get-LatestVersionFromGitHub function to retrieve the version number from tag_name from GitHub
+function Get-LatestVersionFromGitHub($releaseUrlApi) {
+    try {
+        $response = Invoke-RestMethod -Uri $releaseUrlApi -Method Get
+        $latestVersion = $response.tag_name
+        return $latestVersion
+    }
+    catch {
+        Write-Host "GitHub API von MinecraftLogFilterScript nicht erreichbar." -ForegroundColor Red
+        Write-Host "Es konnte nicht geprüft werden ob ein Update verfügbar ist." -ForegroundColor Red
+        return $null
+    }
+}
+
+# Definition der Funktion CheckForUpdate zum Ausgeben, ob ein Update verfügbar ist, oder nicht.
+# Definition of the CheckForUpdate function to output whether an update is available or not.
+function CheckForUpdate($currentVersion, $lastVersion, $repoOwner, $repoName, $releaseUrl) {
+    if ($lastVersion) {
+        if ($lastVersion -gt $currentVersion) {
+            Write-Host "Es ist ein Update verfügbar!"
+            Write-Host "Installierte Version: $currentVersion, Neueste Version: $lastVersion"
+            Write-Host "GitHub Projektseite: https://github.com/$repoOwner/$repoName"
+            
+            Write-Host "Neuestes Release: $releaseUrl"
+            $antwort = Read-Host "Möchten Sie die Seite zum Release öffnen? (J/N)"
+            if ($antwort -eq "J" -or $antwort -eq "j") {
+                Start-Process $releaseUrl
+            }
+            else {
+                Write-Host "Öffnen Sie die Seite $releaseUrl, um das neueste Release anzuzeigen."
+                Read-Host "Drücken Sie eine beliebige Taste, um fortzufahren ..."
+            }
+        }
+        else {
+            Write-Host "Die installierte Version ($currentVersion) ist auf dem neuesten Stand."
+            Read-Host "Drücken Sie eine beliebige Taste, um fortzufahren ..."
+        }
+    }
+}
+
+# Variablen
+# $currentVersion = "v0.0.9"
+# $repoOwner = "RaptorXilef"
+# $repoName = "MinecraftLogFilterScript"
+$releaseUrlApi = "https://api.github.com/repos/$repoOwner/$repoName/releases/latest"
+$releaseUrl = "https://github.com/$repoOwner/$repoName/releases/latest"
+
+# Aufruf der Funktion Get-LatestVersionFromGitHub
+$lastVersion = Get-LatestVersionFromGitHub $releaseUrlApi
+
+# Aufruf der Funktion CheckForUpdate
+CheckForUpdate $currentVersion $lastVersion $repoOwner $repoName $releaseUrl
+
+# Hier kommt dann der restliche Teil des Skripts
+Read-Host "Drücken Sie eine beliebige Taste, um fortzufahren ..."
 
 
 
@@ -31,6 +121,33 @@ Lizenz: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
 
 
 
+
+
+
+
+<#
+Beispielshema:
+function CheckFileAndExecute {
+    param (
+        [string]$filePath
+    )
+
+    # Überprüfen, ob die Datei existiert
+    if (Test-Path $filePath -PathType Leaf) {
+        $variable = 0
+    } else {
+        $variable = 1
+    }
+
+    # Restlicher Code, der unabhängig vom Ergebnis der Dateiüberprüfung ausgeführt wird
+    # Hier können Sie den restlichen Code einfügen, der unabhängig vom Dateiexistenzstatus ausgeführt werden soll
+    Write-Host "Variable: $variable"
+    Write-Host "Weiterer Code, der immer ausgeführt wird"
+}
+
+# Beispielaufruf der Funktion
+CheckFileAndExecute -filePath "C:\Pfad\Zur\Datei.txt"
+#>
 
 
 
@@ -79,11 +196,11 @@ function Get-LatestVersionFromGitHub($releaseUrlApi) {
 }
 
 # Definition der Funktion CheckForUpdate
-function CheckForUpdate($installierteVersion, $neuesteVersion, $repoOwner, $repoName, $releaseUrl) {
-    if ($neuesteVersion) {
-        if ($neuesteVersion -gt $installierteVersion) {
+function CheckForUpdate($currentVersion, $lastVersion, $repoOwner, $repoName, $releaseUrl) {
+    if ($lastVersion) {
+        if ($lastVersion -gt $currentVersion) {
             Write-Host "Es ist ein Update verfügbar!"
-            Write-Host "Installierte Version: $installierteVersion, Neueste Version: $neuesteVersion"
+            Write-Host "Installierte Version: $currentVersion, Neueste Version: $lastVersion"
             Write-Host "GitHub Projektseite: https://github.com/$repoOwner/$repoName"
             
             Write-Host "Neuestes Release: $releaseUrl"
@@ -97,24 +214,24 @@ function CheckForUpdate($installierteVersion, $neuesteVersion, $repoOwner, $repo
             }
         }
         else {
-            Write-Host "Die installierte Version ($installierteVersion) ist auf dem neuesten Stand."
+            Write-Host "Die installierte Version ($currentVersion) ist auf dem neuesten Stand."
             Read-Host "Drücken Sie eine beliebige Taste, um fortzufahren ..."
         }
     }
 }
 
 # Variablen
-$installierteVersion = "v0.0.9"
+$currentVersion = "v0.0.9"
 $repoOwner = "RaptorXilef"
 $repoName = "MinecraftLogFilterScript"
 $releaseUrlApi = "https://api.github.com/repos/$repoOwner/$repoName/releases/latest"
 $releaseUrl = "https://github.com/$repoOwner/$repoName/releases/latest"
 
 # Aufruf der Funktion Get-LatestVersionFromGitHub
-$neuesteVersion = Get-LatestVersionFromGitHub $releaseUrlApi
+$lastVersion = Get-LatestVersionFromGitHub $releaseUrlApi
 
 # Aufruf der Funktion CheckForUpdate
-CheckForUpdate $installierteVersion $neuesteVersion $repoOwner $repoName $releaseUrl
+CheckForUpdate $currentVersion $lastVersion $repoOwner $repoName $releaseUrl
 
 # Hier kommt dann der restliche Teil des Skripts
 Read-Host "Drücken Sie eine beliebige Taste, um fortzufahren ..."
@@ -136,8 +253,7 @@ Read-Host "Drücken Sie eine beliebige Taste, um fortzufahren ..."
 # ! Skript von Version 0.0.1
 # ToDo Skript neu aufbauen, nach den neu erlernten konventionen: erst Funktionen definieren, dann Variablen laden, dann Funktionen ausführen. Nach diesem Shema ändern!
 
-# Aktuelle Skriptversion
-$minecraftLogFilterScriptVersion = "0.0.1"
+
 
 # Pfad zur Konfigurationsdatei
 $configFolder = "MinecraftLogFilter\"
