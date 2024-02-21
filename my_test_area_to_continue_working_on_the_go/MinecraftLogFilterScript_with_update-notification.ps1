@@ -1,8 +1,67 @@
-# Projektname: MinecraftLogFilterScript
+<#
+.SYNOPSIS
+Das Minecraft Log Filter Script ist ein PowerShell-Skript, das die Filterung und Verarbeitung von Minecraft-Server-Logdateien automatisiert.
 
-# Autor: RaptorXilef 
-# GitHub: https://github.com/RaptorXilef/MinecraftLogFilterScript
-# REM Lizens: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
+.DESCRIPTION
+Dieses Skript ermöglicht es Benutzern, Logdateien zu analysieren, bestimmte Ereignisse zu extrahieren und diese basierend auf benutzerdefinierten Filterkriterien in separate Dateien zu organisieren. Es unterstützt mehrere Sprachen, darunter Englisch und Deutsch, um eine breite Benutzerbasis anzusprechen. Das Skript automatisiert den gesamten Prozess vom Lesen der Konfigurationsdatei bis hin zum Filtern der Logs und der Organisation der Ergebnisse in separate Ordner. Die Benutzeroberfläche ist intuitiv gestaltet, und das Skript führt den Benutzer durch den Konfigurationsprozess.
+
+.PARAMETER None
+Dieses Skript erwartet keine Parameter.
+
+.EXAMPLE
+.\MinecraftLogFilterScript.ps1
+Führt das Skript aus, um die Minecraft-Server-Logdateien zu filtern und zu verarbeiten.
+
+.NOTES
+Projektname: MinecraftLogFilterScript
+Version: 1.0
+Autor: RaptorXilef
+GitHub: https://github.com/raptorxilef/MinecraftLogFilterScript
+Lizenz: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
+#>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # ! Update-Skript aus den Tests
 # Definition der Funktion Get-LatestVersionFromGitHub
