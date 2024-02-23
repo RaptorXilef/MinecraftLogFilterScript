@@ -53,7 +53,7 @@ CheckFileAndExecute -filePath "C:\Pfad\Zur\Datei.txt"
 
 function CheckIfUpdateIsAvailable {
     param (
-        [string]$currentVersion = "0.0.2-alpha",
+        [string]$currentVersion = "0.0.1-stabile", # <----------- VERSION
         [string]$repoOwner = "RaptorXilef",
         [string]$repoName = "MinecraftLogFilterScript"
     )
@@ -147,8 +147,10 @@ function CheckIfUpdateIsAvailable {
             } else {
                 $versionSurfixValueAsNumber = [Int32]"0"
             }
-            return $versionSurfixValueAsNumber
+        } else {
+            $versionSurfixValueAsNumber = [Int32]"5"
         }
+        return $versionSurfixValueAsNumber
     }
 
     # Definition der Funktion CheckForUpdate zum Ausgeben, ob ein Update verfügbar ist, oder nicht. # Definition of the CheckForUpdate function to output whether an update is available or not.
@@ -156,13 +158,19 @@ function CheckIfUpdateIsAvailable {
         $releaseUrl = "https://github.com/$repoOwner/$repoName/releases/latest"
         if ($lastVersion) {
             if (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -eq $lastVersionSurfixValueAsNumber) -or (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -gt $lastVersionSurfixValueAsNumber) -or ($currentVersion -gt $lastVersion))) {
+                Write-Host "Info" -ForegroundColor White
+                Write-Host ""
                 Write-Host "[DE] Die installierte Version: $currentVersion ($currentVersionSurfix) ist auf dem neuesten Stand." -ForegroundColor Green
                 Write-Host "[EN] The installed version: $currentVersion ($currentVersionSurfix) is up to date." -ForegroundColor Green
+                Write-Host ""
             
             } elseif (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -lt $lastVersionSurfixValueAsNumber) -or ($currentVersion -lt $lastVersion)) {
+                Write-Host "Info" -ForegroundColor White
+                Write-Host ""
                 Write-Host "[DE] Es ist ein Update verfügbar!" -ForegroundColor Yellow
                 Write-Host "[DE] Installierte Version: $currentVersion ($currentVersionSurfix), Neueste Version: $lastVersion ($lastVersionSurfix)"
                 Write-Host "[DE] Möchten Sie die Downloadseite zur letzten Version in Ihrem Browser öffnen? (J/N)"
+                Write-Host ""
                 Write-Host "[EN] An update is available!" -ForegroundColor Yellow
                 Write-Host "[EN] Installed version: $currentVersion ($currentVersionSurfix), Latest version: $lastVersion ($lastVersionSurfix)"
                 $answer = Read-Host "Would you like to open the download page for the latest version in your browser? (Y/N)"
@@ -171,9 +179,12 @@ function CheckIfUpdateIsAvailable {
                     Start-Process $releaseUrl
                 }
                 else {
+                    Write-Host "Update" -ForegroundColor White
+                    Write-Host ""
                     Write-Host "[DE] Öffnen Sie die Seite $releaseUrl, um das neueste Update anzuzeigen."
                     Write-Host "[DE] Sie können auch die Suche nach Updates in der $configFile deaktivieren."
                     Write-Host "[DE] Drücken Sie eine beliebige Taste, um fortzufahren ..."
+                    Write-Host ""
                     Write-Host "[EN] Open the $releaseUrl page to display the latest update."
                     Write-Host "[EN] You can also deactivate the search for updates in the $configFile."
                     Read-Host "[EN] Press any button to continue ..."
@@ -219,6 +230,10 @@ function CheckIfUpdateIsAvailable {
     $currentVersion, $currentVersionSurfix = Split-Version -version $currentVersion
     $lastVersion, $lastVersionSurfix = Split-Version -version $lastVersion
 
+    # Setzt die Versionsbezeichnung auf stabile wenn diese nicht gesetzt wurde # Sets the version designation to stabile if this has not been set
+    if ($currentVersionSurfix) {} else {$currentVersionSurfix = "stabile"}
+    if ($lastVersionSurfix) {} else {$lastVersionSurfix = "stabile"}
+
     # Entfernen des "v" vom Anfang des Strings, wenn es existiert # Remove the "v" from the beginning of the string if it exists
     $currentVersion = Remove-vFromVersion -version $currentVersion
     $lastVersion = Remove-vFromVersion -version $lastVersion
@@ -263,6 +278,7 @@ function CheckIfUpdateIsAvailable {
     $langENFileVersion = "1"
 
 # Abrufen der Funktionen
+
 CheckIfUpdateIsAvailable
 
 PAUSE
