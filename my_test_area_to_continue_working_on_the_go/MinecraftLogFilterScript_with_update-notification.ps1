@@ -1,4 +1,3 @@
-$currentVersion = "v0.0.2"
 <#
 .SYNOPSIS
 Das Minecraft Log Filter Script ist ein PowerShell-Skript, das die Filterung und Verarbeitung von Minecraft-Server-Logdateien automatisiert.
@@ -53,7 +52,7 @@ CheckFileAndExecute -filePath "C:\Pfad\Zur\Datei.txt"
 
 function CheckIfUpdateIsAvailable {
     param (
-        [string]$currentVersion = "0.0.1-stabile", # <----------- VERSION
+        [string]$currentVersion = "0.0.2-alpha", # <----------- VERSION
         [string]$repoOwner = "RaptorXilef",
         [string]$repoName = "MinecraftLogFilterScript"
     )
@@ -61,6 +60,7 @@ function CheckIfUpdateIsAvailable {
     # Definition der Funktion Get-LatestVersionFromGitHub zum abrufen der Versionsnummer aus tag_name von GitHub # Definition of the Get-LatestVersionFromGitHub function to retrieve the version number from tag_name from GitHub
     function Get-LatestVersionFromGitHub($releaseUrlApi) {
         # Variablen
+        # $releaseUrlApi = "https://api.github.com/repos/$repoOwner/$repoName/releases" # <-------- Use this if you also want to check for pre-releases
         $releaseUrlApi = "https://api.github.com/repos/$repoOwner/$repoName/releases/latest"
         try {
             $response = Invoke-RestMethod -Uri $releaseUrlApi -Method Get
@@ -69,7 +69,7 @@ function CheckIfUpdateIsAvailable {
         }
         catch {
             Write-Host "GitHub API von MinecraftLogFilterScript nicht erreichbar." -ForegroundColor Red
-            Write-Host "Es konnte nicht geprüft werden ob ein Update verfügbar ist." -ForegroundColor Red
+            Write-Host "Es konnte nicht geprüft werden, ob ein Update verfügbar ist." -ForegroundColor Red
             return $null
         }
     }
@@ -293,62 +293,6 @@ PAUSE
 
 
 #    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
