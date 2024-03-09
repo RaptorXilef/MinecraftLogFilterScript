@@ -261,9 +261,8 @@ function CheckIfUpdateIsAvailable {
 
 }
 
-function Write-YamlToFile {
+function Write-YamlDEToFile {
     param (
-        [string]$YamlText,
         [string]$FilePath
     )
 
@@ -289,7 +288,37 @@ scriptFinishedMessage: "Sie können das Konsolenfenster nun schließen oder mit 
 "@
     $defaultLangDEConfig | Out-File -FilePath $FilePath -Encoding utf8
 }
-    
+function Write-YamlENToFile {
+    param (
+        [string]$FilePath
+    )
+
+    $defaultLangENConfig = @"
+# Never edit the version number!
+langENConfigVersion: "$langENFileVersion"
+
+# English texts here
+configCreatedMessage: "The configuration file '{0}' has been created."
+configEditMessage: "Please edit this file to customize the language, filter terms and folder paths."
+pressAnyKeyContinueMessage: "Press any button to continue."
+foldersCreatedMessage: "Folders have been created:"
+filesAddedMessage: "Please add the log file(s) to be filtered in the folder {0}. Then continue."
+restartScriptMessage: "Then continue."
+filesNotFoundMessage: "Please add the log file/s to be filtered in the folder {0}."
+processingLogsMessage: "The log files are being processed. Please be patient for a moment."
+pleaseWaitMessage: "Please wait..."
+processingFinishMessage: "Processing successful!"
+processingResultMessage: "Result:"
+processingFinishAMessage: "The processing of"
+processingFinishBMessage: "was successful."
+processingFinishFoundMessage: "Found"
+processingFinishFolderInfoMessage: "You can find the filter results under"
+scriptFinishedMessage: "You can now close the console window or restart it by pressing any key!"
+"@
+    $defaultLangENConfig | Out-File -FilePath $FilePath -Encoding utf8
+}
+
+
 
 
 # >>>>Variablen<<<<
@@ -335,11 +364,13 @@ if (-not (Test-Path $configFolder -PathType Container)) {
 
 # Prüfen, ob die Sprachkonfigurationsdatei für Deutsch existiert, andernfalls erstellen
 if (-not (Test-Path $langDEFile -PathType Leaf)) {
-    Write-YamlToFile -YamlText $defaultLangDEConfig -FilePath $langDEFile
+    Write-YamlDEToFile -FilePath $langDEFile
 }
 
-
-
+# Prüfen, ob die Sprachkonfigurationsdatei für Englisch existiert, andernfalls erstellen
+if (-not (Test-Path $langENFile -PathType Leaf)) {
+    Write-YamlENToFile -FilePath $langENFile
+}
 
 
 
@@ -409,33 +440,7 @@ PAUSE
 
 
 
-# Prüfen, ob die Sprachkonfigurationsdatei für Englisch existiert, andernfalls erstellen
-if (-not (Test-Path $langENFile -PathType Leaf)) {
-    $defaultLangENConfig = @"
-# Never edit the version number!
-langENConfigVersion: "$langENFileVersion"
 
-# English texts here
-configCreatedMessage: "The configuration file '{0}' has been created."
-configEditMessage: "Please edit this file to customize the language, filter terms and folder paths."
-pressAnyKeyContinueMessage: "Press any button to continue."
-foldersCreatedMessage: "Folders have been created:"
-filesAddedMessage: "Please add the log file(s) to be filtered in the folder {0}. Then continue."
-restartScriptMessage: "Then continue."
-filesNotFoundMessage: "Please add the log file/s to be filtered in the folder {0}."
-processingLogsMessage: "The log files are being processed. Please be patient for a moment."
-pleaseWaitMessage: "Please wait..."
-processingFinishMessage: "Processing successful!"
-processingResultMessage: "Result:"
-processingFinishAMessage: "The processing of"
-processingFinishBMessage: "was successful."
-processingFinishFoundMessage: "Found"
-processingFinishFolderInfoMessage: "You can find the filter results under"
-scriptFinishedMessage: "You can now close the console window or restart it by pressing any key!"
-"@
-    $defaultLangENConfig | Out-File -FilePath $langENFile -Encoding utf8
-#    Start-Sleep -Seconds 0
-}
 
 # Laden der Sprachkonfiguration für Deutsch
 $langDEConfig = Get-Content $langDEFile | ConvertFrom-Yaml
