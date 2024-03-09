@@ -49,7 +49,7 @@ function CheckFileAndExecute {
 CheckFileAndExecute -filePath "C:\Pfad\Zur\Datei.txt"
 #>
 
-
+# >>>>Funktionen<<<<
 function CheckIfUpdateIsAvailable {
     param (
         [string]$currentVersion = "0.0.2-alpha", # <----------- VERSION
@@ -243,8 +243,8 @@ function CheckIfUpdateIsAvailable {
     $lastVersion = ConvertTo-SystemVersion -version $lastVersion
 
     # Test-Ausgabe der aufgetrennten Versionen # Test-output of the split versions
-#    Write-Host "Aktuelle Version: $currentVersion ($currentVersionSurfix)"
-#    Write-Host "Neueste Version: $lastVersion ($lastVersionSurfix)"
+    # Write-Host "Aktuelle Version: $currentVersion ($currentVersionSurfix)"
+    # Write-Host "Neueste Version: $lastVersion ($lastVersionSurfix)"
 
     # Version-Surfix in nummerischen Wert umwandeln # Convert version surfix to numerical value
     $currentVersionSurfixValueAsNumber = Test-IsVersionsSurfixChange -versionSurfix $currentVersionSurfix
@@ -261,12 +261,74 @@ function CheckIfUpdateIsAvailable {
 
 }
 
+function Write-YamlDEToFile {
+    param (
+        [string]$FilePath
+    )
 
-# Variablen
+    $defaultLangDEConfig = @"
+# Die Versionsnummer niemals bearbeiten!
+langDEConfigVersion: "$langDEFileVersion"
+
+# Die deutschen Texte
+configCreatedMessage: "Die Konfigurationsdatei '{0}' wurde erstellt."
+configEditMessage: "Bitte bearbeiten Sie diese Datei, um die Sprache, Filterbegriffe und Ordnerpfade anzupassen."
+pressAnyKeyContinueMessage: "Drücken Sie eine beliebige Taste, um fortzufahren."
+foldersCreatedMessage: "Es wurden Ordner erstellt:"
+filesAddedMessage: "Bitte füge im Ordner {0} die zu filternde/n Log-Dateie/n ein. Fahre anschließend fort."
+restartScriptMessage: "Fahre anschließend fort."
+filesNotFoundMessage: "Bitte füge im Ordner {0} die zu filternde/n Log-Dateie/n ein."
+processingLogsMessage: "Die Log-Dateien werden verarbeitet. Bitte habe einen Moment Geduld."
+pleaseWaitMessage: "Bitte warten..."
+processingFinishAMessage: "Die Verarbeitung von"
+processingFinishBMessage: "war erfolgreich."
+processingFinishFoundMessage: "Gefunden"
+processingFinishFolderInfoMessage: "Sie finden die Filterergebnisse unter"
+scriptFinishedMessage: "Sie können das Konsolenfenster nun schließen oder mit einer beliebigen Taste neu starten!"
+"@
+    $defaultLangDEConfig | Out-File -FilePath $FilePath -Encoding utf8
+}
+function Write-YamlENToFile {
+    param (
+        [string]$FilePath
+    )
+
+    $defaultLangENConfig = @"
+# Never edit the version number!
+langENConfigVersion: "$langENFileVersion"
+
+# English texts here
+configCreatedMessage: "The configuration file '{0}' has been created."
+configEditMessage: "Please edit this file to customize the language, filter terms and folder paths."
+pressAnyKeyContinueMessage: "Press any button to continue."
+foldersCreatedMessage: "Folders have been created:"
+filesAddedMessage: "Please add the log file(s) to be filtered in the folder {0}. Then continue."
+restartScriptMessage: "Then continue."
+filesNotFoundMessage: "Please add the log file/s to be filtered in the folder {0}."
+processingLogsMessage: "The log files are being processed. Please be patient for a moment."
+pleaseWaitMessage: "Please wait..."
+processingFinishMessage: "Processing successful!"
+processingResultMessage: "Result:"
+processingFinishAMessage: "The processing of"
+processingFinishBMessage: "was successful."
+processingFinishFoundMessage: "Found"
+processingFinishFolderInfoMessage: "You can find the filter results under"
+scriptFinishedMessage: "You can now close the console window or restart it by pressing any key!"
+"@
+    $defaultLangENConfig | Out-File -FilePath $FilePath -Encoding utf8
+}
+
+
+
+
+# >>>>Variablen<<<<
     # Pfad zum Skriptordner
     $configFolder = "MinecraftLogFilter\"
     # Pfad zur Konfigurationsdatei
     $configFile = $configFolder + "config.yml"
+
+    # Liste der verfügbaren Sprachen
+    $availableLanguages = @("de", "en")
     # Pfad zur Sprachkonfigurationsdatei für Deutsch
     $langDEFile = $configFolder + "lang-de.yml"
     # Pfad zur Sprachkonfigurationsdatei für Englisch
@@ -277,10 +339,49 @@ function CheckIfUpdateIsAvailable {
     $langDEFileVersion = "1"
     $langENFileVersion = "1"
 
-# Abrufen der Funktionen
+
+
+
+# >>>>Abrufen der Funktionen<<<<
+# Überprüfen, ob das Modul powershell-yaml installiert ist, wenn nicht, installiere es
+if (-not (Get-Module -Name powershell-yaml -ListAvailable)) {
+    Write-Host "[EN] The module 'powershell-yaml' is needed to read the config.yml, which contains the filter settings. It will now be installed..." -ForegroundColor Yellow
+    Write-Host "[DE] Das Modul 'powershell-yaml' wird benötigt um die config.yml zu lesen, welche die Filtereinstellungen enthält. Es wird jetzt installiert..." -ForegroundColor Yellow
+    Install-Module -Name powershell-yaml -Scope CurrentUser -Force
+    Import-Module -Name powershell-yaml
+} else {
+    # Importieren des Moduls powershell-yaml
+    Import-Module -Name powershell-yaml
+}
+
+# Prüfen, ob $configFolder existiert
+if (-not (Test-Path $configFolder -PathType Container)) {
+    #Prüfe auf Updates bevor das Skript das erste mal ausgeführt wird
+    CheckIfUpdateIsAvailable
+    # Erstellen des Ordners, falls er nicht existiert
+    New-Item -ItemType Directory -Path $configFolder -Force | Out-Null
+}
+
+# Prüfen, ob die Sprachkonfigurationsdatei für Deutsch existiert, andernfalls erstellen
+if (-not (Test-Path $langDEFile -PathType Leaf)) {
+    Write-YamlDEToFile -FilePath $langDEFile
+}
+
+# Prüfen, ob die Sprachkonfigurationsdatei für Englisch existiert, andernfalls erstellen
+if (-not (Test-Path $langENFile -PathType Leaf)) {
+    Write-YamlENToFile -FilePath $langENFile
+}
+
+
+
+
+
+
+
+PAUSE
+
 
 CheckIfUpdateIsAvailable
-
 
 
 
@@ -323,80 +424,14 @@ PAUSE
 
 
 
-# Liste der verfügbaren Sprachen
-$availableLanguages = @("de", "en")
-
-# Überprüfen, ob das Modul powershell-yaml installiert ist, und es installieren, wenn nicht
-if (-not (Get-Module -Name powershell-yaml -ListAvailable)) {
-    Write-Host "[EN] The module 'powershell-yaml' is needed to read the config.yml, which contains the filter settings. It will now be installed..." -ForegroundColor Yellow
-    Write-Host "[DE] Das Modul 'powershell-yaml' wird benötigt um die config.yml zu lesen, welche die Filtereinstellungen enthält. Es wird jetzt installiert..." -ForegroundColor Yellow
-    Install-Module -Name powershell-yaml -Scope CurrentUser -Force
-    Import-Module -Name powershell-yaml
-}
-
-# Importieren des Moduls powershell-yaml
-Import-Module -Name powershell-yaml
 
 
-# Prüfen, ob $configFolder existiert
-if (-not (Test-Path $configFolder -PathType Container)) {
-    # Erstellen des Ordners, falls er nicht existiert
-    New-Item -ItemType Directory -Path $configFolder -Force | Out-Null
-}
 
-# Prüfen, ob die Sprachkonfigurationsdatei für Deutsch existiert, andernfalls erstellen
-if (-not (Test-Path $langDEFile -PathType Leaf)) {
-    $defaultLangDEConfig = @"
-# Die Versionsnummer niemals bearbeiten!
-langDEConfigVersion: "$langDEFileVersion"
 
-# Die deutschen Texte
-configCreatedMessage: "Die Konfigurationsdatei '{0}' wurde erstellt."
-configEditMessage: "Bitte bearbeiten Sie diese Datei, um die Sprache, Filterbegriffe und Ordnerpfade anzupassen."
-pressAnyKeyContinueMessage: "Drücken Sie eine beliebige Taste, um fortzufahren."
-foldersCreatedMessage: "Es wurden Ordner erstellt:"
-filesAddedMessage: "Bitte füge im Ordner {0} die zu filternde/n Log-Dateie/n ein. Fahre anschließend fort."
-restartScriptMessage: "Fahre anschließend fort."
-filesNotFoundMessage: "Bitte füge im Ordner {0} die zu filternde/n Log-Dateie/n ein."
-processingLogsMessage: "Die Log-Dateien werden verarbeitet. Bitte habe einen Moment Geduld."
-pleaseWaitMessage: "Bitte warten..."
-processingFinishAMessage: "Die Verarbeitung von"
-processingFinishBMessage: "war erfolgreich."
-processingFinishFoundMessage: "Gefunden"
-processingFinishFolderInfoMessage: "Sie finden die Filterergebnisse unter"
-scriptFinishedMessage: "Sie können das Konsolenfenster nun schließen oder mit einer beliebigen Taste neu starten!"
-"@
-    $defaultLangDEConfig | Out-File -FilePath $langDEFile -Encoding utf8
-#    Start-Sleep -Seconds 0
-}
 
-# Prüfen, ob die Sprachkonfigurationsdatei für Englisch existiert, andernfalls erstellen
-if (-not (Test-Path $langENFile -PathType Leaf)) {
-    $defaultLangENConfig = @"
-# Never edit the version number!
-langENConfigVersion: "$langENFileVersion"
 
-# English texts here
-configCreatedMessage: "The configuration file '{0}' has been created."
-configEditMessage: "Please edit this file to customize the language, filter terms and folder paths."
-pressAnyKeyContinueMessage: "Press any button to continue."
-foldersCreatedMessage: "Folders have been created:"
-filesAddedMessage: "Please add the log file(s) to be filtered in the folder {0}. Then continue."
-restartScriptMessage: "Then continue."
-filesNotFoundMessage: "Please add the log file/s to be filtered in the folder {0}."
-processingLogsMessage: "The log files are being processed. Please be patient for a moment."
-pleaseWaitMessage: "Please wait..."
-processingFinishMessage: "Processing successful!"
-processingResultMessage: "Result:"
-processingFinishAMessage: "The processing of"
-processingFinishBMessage: "was successful."
-processingFinishFoundMessage: "Found"
-processingFinishFolderInfoMessage: "You can find the filter results under"
-scriptFinishedMessage: "You can now close the console window or restart it by pressing any key!"
-"@
-    $defaultLangENConfig | Out-File -FilePath $langENFile -Encoding utf8
-#    Start-Sleep -Seconds 0
-}
+
+
 
 # Laden der Sprachkonfiguration für Deutsch
 $langDEConfig = Get-Content $langDEFile | ConvertFrom-Yaml
