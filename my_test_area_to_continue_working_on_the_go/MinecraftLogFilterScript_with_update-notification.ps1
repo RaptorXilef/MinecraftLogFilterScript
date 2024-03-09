@@ -372,7 +372,10 @@ if (-not (Test-Path $langENFile -PathType Leaf)) {
     Write-YamlENToFile -FilePath $langENFile
 }
 
-
+# Laden der Sprachkonfiguration für Deutsch
+$langDEConfig = Get-Content $langDEFile | ConvertFrom-Yaml
+# Laden der Sprachkonfiguration für Englisch
+$langENConfig = Get-Content $langENFile | ConvertFrom-Yaml
 
 
 
@@ -442,10 +445,7 @@ PAUSE
 
 
 
-# Laden der Sprachkonfiguration für Deutsch
-$langDEConfig = Get-Content $langDEFile | ConvertFrom-Yaml
-# Laden der Sprachkonfiguration für Englisch
-$langENConfig = Get-Content $langENFile | ConvertFrom-Yaml
+
 
 # Überprüfen der Konfigurationsversionen für die Sprachdateien
 if ($langDEConfig.langDEConfigVersion -ne $langDEFileVersion -or $langENConfig.langENConfigVersion -ne $langENFileVersion) {
