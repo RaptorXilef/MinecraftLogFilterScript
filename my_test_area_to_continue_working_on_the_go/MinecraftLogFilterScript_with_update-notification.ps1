@@ -396,15 +396,6 @@ CheckIfUpdateIsAvailable
 
 
 
-
-
-
-
-
-
-
-
-
 PAUSE
 
 
