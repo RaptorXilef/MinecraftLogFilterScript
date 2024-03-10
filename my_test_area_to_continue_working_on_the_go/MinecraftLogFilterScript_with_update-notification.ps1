@@ -19,11 +19,11 @@ Autor: RaptorXilef
 GitHub: https://github.com/raptorxilef/MinecraftLogFilterScript
 Lizenz: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
 #>
-# ToDo 1. Mit "Visual Studio Code" gefundene Fehler beseitigen
+# ToDo 1. Mit "Visual Studio Code" gefundene Fehler beseitigen ✔
 # ToDo 2. Code nach konvention strukturieren und in Formeln aufgliedern
-# ToDo 3. NAch update suchen, bevor eine config.yml existiert, wenn existiert erst:
+# ToDo 3. Nach update suchen, bevor eine config.yml existiert, wenn existiert erst: ✔
 # ToDo     Updatefunktion am Ende des Skripts ausführen, nach der Ausgabe der gefilterten Daten
-# Todo 4. Funktion einbauen, in Config die Updates zu deaktivieren. 
+# Todo 4. Funktion einbauen, in Config die Updates zu deaktivieren/aktivieren. 
 
 <#
 Beispielshema:
@@ -52,9 +52,10 @@ CheckFileAndExecute -filePath "C:\Pfad\Zur\Datei.txt"
 # >>>>Funktionen<<<<
 function CheckIfUpdateIsAvailable {
     param (
-        [string]$currentVersion = "0.0.2-alpha", # <----------- VERSION
+        [string]$currentVersion = "0.0.1-alpha", # <----------- VERSION
         [string]$repoOwner = "RaptorXilef",
-        [string]$repoName = "MinecraftLogFilterScript"
+        [string]$repoName = "MinecraftLogFilterScript",
+        [bool] $firstStart
     )
 
     # Definition der Funktion Get-LatestVersionFromGitHub zum abrufen der Versionsnummer aus tag_name von GitHub # Definition of the Get-LatestVersionFromGitHub function to retrieve the version number from tag_name from GitHub
@@ -68,10 +69,10 @@ function CheckIfUpdateIsAvailable {
             return $latestVersion
         }
         catch {
-            Write-Host "GitHub API of MinecraftLogFilterScript not accessible." -ForegroundColor Red
-            Write-Host "It was not possible to check whether an update is available." -ForegroundColor Red
             Write-Host "GitHub API von MinecraftLogFilterScript nicht erreichbar." -ForegroundColor Red
             Write-Host "Es konnte nicht geprüft werden, ob ein Update verfügbar ist." -ForegroundColor Red
+            Write-Host "GitHub API of MinecraftLogFilterScript not accessible." -ForegroundColor Red
+            Write-Host "It was not possible to check whether an update is available." -ForegroundColor Red
             return $null
         }
     }
@@ -87,8 +88,8 @@ function CheckIfUpdateIsAvailable {
             return $latestVersion
         }
         catch {
-            Write-Host "GitHub API von MinecraftLogFilterScript nicht erreichbar." -ForegroundColor Red # ToDo In Variable ändern und in lang.yml einfügen
-            Write-Host "Es konnte nicht geprüft werden, ob ein Update verfügbar ist." -ForegroundColor Red
+            Write-Host $selectedLangConfig.lastVersionFromGitHub_errorMessage1 -ForegroundColor Red
+            Write-Host $selectedLangConfig.lastVersionFromGitHub_errorMessage2 -ForegroundColor Red
             return $null
         }
     }
@@ -184,56 +185,83 @@ function CheckIfUpdateIsAvailable {
                 Write-Host ""
             
             } elseif (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -lt $lastVersionSurfixValueAsNumber) -or ($currentVersion -lt $lastVersion)) {
-                Write-Host "Info" -ForegroundColor White
-                Write-Host ""
-                Write-Host "[DE] Es ist ein Update verfügbar!" -ForegroundColor Yellow
-                Write-Host "[DE] Installierte Version: $currentVersion ($currentVersionSurfix), Neueste Version: $lastVersion ($lastVersionSurfix)"
-                Write-Host "[DE] Möchten Sie die Downloadseite zur letzten Version in Ihrem Browser öffnen? (J/N)"
-                Write-Host ""
-                Write-Host "[EN] An update is available!" -ForegroundColor Yellow
-                Write-Host "[EN] Installed version: $currentVersion ($currentVersionSurfix), Latest version: $lastVersion ($lastVersionSurfix)"
-                $answer = Read-Host "Would you like to open the download page for the latest version in your browser? (Y/N)"
+                $answerChoose = $false
+                do {    
+                    Clear-Host            
+                    Write-Host "Info" -ForegroundColor White
+                    Write-Host ""
+                    Write-Host "[DE] Es ist ein Update verfügbar!" -ForegroundColor Yellow
+                    Write-Host "[DE] Installierte Version: $currentVersion ($currentVersionSurfix), Neueste Version: $lastVersion ($lastVersionSurfix)"
+                    Write-Host "[DE] Möchten Sie die Downloadseite zur letzten Version in Ihrem Browser öffnen? (J/N)"
+                    Write-Host ""
+                    Write-Host "[EN] An update is available!" -ForegroundColor Yellow
+                    Write-Host "[EN] Installed version: $currentVersion ($currentVersionSurfix), Latest version: $lastVersion ($lastVersionSurfix)"
+                    $answer = Read-Host "Would you like to open the download page for the latest version in your browser? (Y/N)"
 
-                if ($answer -eq "J" -or $answer -eq "j") {
-                    Start-Process $releaseUrl
-                }
-                else {
-                    Write-Host "Update" -ForegroundColor White
-                    Write-Host ""
-                    Write-Host "[DE] Öffnen Sie die Seite $releaseUrl, um das neueste Update anzuzeigen."
-                    Write-Host "[DE] Sie können auch die Suche nach Updates in der $configFile deaktivieren."
-                    Write-Host "[DE] Drücken Sie eine beliebige Taste, um fortzufahren ..."
-                    Write-Host ""
-                    Write-Host "[EN] Open the $releaseUrl page to display the latest update."
-                    Write-Host "[EN] You can also deactivate the search for updates in the $configFile."
-                    Read-Host "[EN] Press any button to continue ..."
-                }
+                    if ($answer -eq "J" -or $answer -eq "j" -or $answer -eq "Y" -or $answer -eq "y") {
+                        $answerChoose = $true
+                        Start-Process $releaseUrl
+                    }
+                    elseif ($answer -eq "N" -or $answer -eq "n") {
+                        $answerChoose = $true
+                        Write-Host ""
+                        Write-Host "Update" -ForegroundColor White
+                        Write-Host ""
+                        Write-Host "[DE] Öffnen Sie die Seite $releaseUrl, um das neueste Update anzuzeigen."
+                        Write-Host "[DE] Sie können auch die Suche nach Updates in der $configFile deaktivieren."
+                        Write-Host "[DE] Drücken Sie eine beliebige Taste, um fortzufahren ..."
+                        Write-Host ""
+                        Write-Host "[EN] Open the $releaseUrl page to display the latest update."
+                        Write-Host "[EN] You can also deactivate the search for updates in the $configFile."
+                        Read-Host "[EN] Press any button to continue ..."
+                    } else {
+                        Write-Host ""
+                        Write-Host "Ungültige Auswahl." -ForegroundColor Red
+                        Write-Host "Invalid selection." -ForegroundColor Red
+                        Start-Sleep -Seconds 1
+                    }
+                } while ($false -eq $answerChoose)
             
             }
         }
     }
 
-    # ToDo Übersetzungen in lang-?.yml einbauen
     # Definition der Funktion CheckForUpdate zum Ausgeben, ob ein Update verfügbar ist, oder nicht. # Definition of the CheckForUpdate function to output whether an update is available or not.
     function Test-UpdateAvailableWithConfig($currentVersion, $lastVersion, $repoOwner, $repoName) {
         $releaseUrl = "https://github.com/$repoOwner/$repoName/releases/latest"
         if ($lastVersion) {
             if (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -eq $lastVersionSurfixValueAsNumber) -or (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -gt $lastVersionSurfixValueAsNumber) -or ($currentVersion -gt $lastVersion))) {
-                Write-Host "The installed version: $currentVersion ($currentVersionSurfix) is up to date." -ForegroundColor Green
-            
+                Write-Host $selectedLangConfig.updateAvailable_info -ForegroundColor White
+                Write-Host ""
+                Write-Host $selectedLangConfig.updateAvailable_upToDate1 $currentVersion ($currentVersionSurfix) $selectedLangConfig.updateAvailable_upToDate2 -ForegroundColor Green
             } elseif (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -lt $lastVersionSurfixValueAsNumber) -or ($currentVersion -lt $lastVersion)) {
-                Write-Host "An update is available!" -ForegroundColor Yellow
-                Write-Host "Installed version: $currentVersion ($currentVersionSurfix), Latest version: $lastVersion ($lastVersionSurfix)"
-                $answer = Read-Host "Would you like to open the download page for the latest version in your browser? (Y/N)"
+                $answerChoose = $false
+                do {
+                    Clear-Host
+                    Write-Host $selectedLangConfig.updateAvailable_info -ForegroundColor White
+                    Write-Host ""
+                    Write-Host $selectedLangConfig.updateAvailable_updateAvailable -ForegroundColor Yellow
+                    Write-Host $selectedLangConfig.updateAvailable_installedVersion $currentVersion ($currentVersionSurfix), $selectedLangConfig.updateAvailable_latestVersion $lastVersion ($lastVersionSurfix)
+                    $answer = Read-Host $selectedLangConfig.updateAvailable_askOpenDownloadPage
 
-                if ($answer -eq "J" -or $answer -eq "j" -or $answer -eq "Y" -or $answer -eq "y") {
-                    Start-Process $releaseUrl
-                }
-                else {
-                    Write-Host "Open the $releaseUrl page to display the latest update."
-                    Write-Host "You can also deactivate the search for updates in the $configFile."
-                    Read-Host "Press any button to continue ..."
-                }
+                    if ($answer -eq "J" -or $answer -eq "j" -or $answer -eq "Y" -or $answer -eq "y") {
+                        $answerChoose = $true
+                        Start-Process $releaseUrl
+                    }
+                    elseif ($answer -eq "N" -or $answer -eq "n") {
+                        $answerChoose = $true
+                        Write-Host ""
+                        Write-Host $selectedLangConfig.updateAvailable_showDownloadPage1 -ForegroundColor White
+                        Write-Host ""
+                        Write-Host $selectedLangConfig.updateAvailable_showDownloadPage2 $releaseUrl $selectedLangConfig.updateAvailable_showDownloadPage3
+                        Write-Host $selectedLangConfig.updateAvailable_showDownloadPage4 $configFile $selectedLangConfig.updateAvailable_showDownloadPage5
+                        Read-Host $selectedLangConfig.updateAvailable_showDownloadPage6
+                    } else {
+                        Write-Host ""
+                        Write-Host $selectedLangConfig.invalideSelection -ForegroundColor Red
+                        Start-Sleep -Seconds 1
+                    }
+                } while ($false -eq $answerChoose)
             
             }
         }
@@ -243,11 +271,13 @@ function CheckIfUpdateIsAvailable {
 
 
     # Aufruf der Funktion Get-LatestVersionFromGitHub # Calling the Get-LatestVersionFromGitHub function
-    if (-not (Test-Path $configFile -PathType Leaf)) {
+    if ($firstStart -eq $true) {
         # Aufruf der Funktion CheckForUpdate
+        # Write-Host $firstStart $true
         $lastVersion = Get-LatestVersionFromGitHub_FirstStart $releaseUrlApi
     } else {
         # Aufruf der Funktion CheckForUpdate
+        # Write-Host $firstStart $false
         $lastVersion = Get-LatestVersionFromGitHub $releaseUrlApi
     }
 
@@ -275,7 +305,8 @@ function CheckIfUpdateIsAvailable {
     $currentVersionSurfixValueAsNumber = Test-IsVersionsSurfixChange -versionSurfix $currentVersionSurfix
     $lastVersionSurfixValueAsNumber = Test-IsVersionsSurfixChange -versionSurfix $lastVersionSurfix
 
-    if (-not (Test-Path $configFile -PathType Leaf)) {
+    #if (-not (Test-Path $configFile -PathType Leaf)) {
+    if ($firstStart -eq $true) {
         # Aufruf der Funktion CheckForUpdate
         Test-UpdateAvailableWithoutConfig $currentVersion $lastVersion $repoOwner $repoName
     } else {
@@ -296,6 +327,22 @@ function Write-YamlDEToFile {
 langDEConfigVersion: "$langDEFileVersion"
 
 # Die deutschen Texte
+lastVersionFromGitHub_errorMessage1: "GitHub API von MinecraftLogFilterScript nicht erreichbar."
+lastVersionFromGitHub_errorMessage2: "Es konnte nicht geprüft werden, ob ein Update verfügbar ist."
+updateAvailable_info: "Info"
+updateAvailable_upToDate1: "Die installierte Version:"
+updateAvailable_upToDate2: "ist auf dem neuesten Stand."
+updateAvailable_updateAvailable: "Es ist ein Update verfügbar!"
+updateAvailable_installedVersion: "Installierte Version:"
+updateAvailable_latestVersion: "Neueste Version:"
+updateAvailable_askOpenDownloadPage: "Möchten Sie die Downloadseite zur letzten Version in Ihrem Browser öffnen? (J/N)"
+updateAvailable_showDownloadPage1: "Update"
+updateAvailable_showDownloadPage2: "Öffnen Sie die Seite"
+updateAvailable_showDownloadPage3: ", um das neueste Update anzuzeigen."
+updateAvailable_showDownloadPage4: "Sie können auch die Suche nach Updates in der"
+updateAvailable_showDownloadPage5: "deaktivieren."
+updateAvailable_showDownloadPage6: "Drücken Sie eine beliebige Taste, um fortzufahren ..."
+invalideSelection: "Ungültige Auswahl."
 configCreatedMessage: "Die Konfigurationsdatei '{0}' wurde erstellt."
 configEditMessage: "Bitte bearbeiten Sie diese Datei, um die Sprache, Filterbegriffe und Ordnerpfade anzupassen."
 pressAnyKeyContinueMessage: "Drücken Sie eine beliebige Taste, um fortzufahren."
@@ -323,6 +370,22 @@ function Write-YamlENToFile {
 langENConfigVersion: "$langENFileVersion"
 
 # English texts here
+lastVersionFromGitHub_errorMessage1: "GitHub API of MinecraftLogFilterScript not accessible."
+lastVersionFromGitHub_errorMessage2: "It was not possible to check whether an update is available."
+updateAvailable_info: "Info"
+updateAvailable_upToDate1: "The installed version:"
+updateAvailable_upToDate2: "is up to date."
+updateAvailable_updateAvailable: "An update is available!"
+updateAvailable_installedVersion: "Installed version:"
+updateAvailable_latestVersion: "Latest version:"
+updateAvailable_askOpenDownloadPage: "Would you like to open the download page for the latest version in your browser? (Y/N)"
+updateAvailable_showDownloadPage1: "Update"
+updateAvailable_showDownloadPage2: "Open the"
+updateAvailable_showDownloadPage3: "page to display the latest update."
+updateAvailable_showDownloadPage4: "You can also deactivate the search for updates in the"
+updateAvailable_showDownloadPage5: "."
+updateAvailable_showDownloadPage6: "Press any button to continue ..."
+invalideSelection: "Invalid selection."
 configCreatedMessage: "The configuration file '{0}' has been created."
 configEditMessage: "Please edit this file to customize the language, filter terms and folder paths."
 pressAnyKeyContinueMessage: "Press any button to continue."
@@ -361,8 +424,8 @@ scriptFinishedMessage: "You can now close the console window or restart it by pr
 
     # Versionsvariablen für die Konfigurationsdatei und die Sprachkonfigurationsdateien
     $configFileVersion = "1"
-    $langDEFileVersion = "1"
-    $langENFileVersion = "1"
+    $langDEFileVersion = "2"
+    $langENFileVersion = "2"
 
 
 
@@ -382,9 +445,12 @@ if (-not (Get-Module -Name powershell-yaml -ListAvailable)) {
 # Prüfen, ob $configFolder existiert
 if (-not (Test-Path $configFolder -PathType Container)) {
     #Prüfe auf Updates bevor das Skript das erste mal ausgeführt wird
-    CheckIfUpdateIsAvailable
+    $firstStartInput = $true
+    CheckIfUpdateIsAvailable -firstStart $firstStartInput
     # Erstellen des Ordners, falls er nicht existiert
     New-Item -ItemType Directory -Path $configFolder -Force | Out-Null
+} else {
+    $firstStartInput = $false
 }
 
 # Prüfen, ob die Sprachkonfigurationsdatei für Deutsch existiert, andernfalls erstellen
@@ -409,7 +475,12 @@ $langENConfig = Get-Content $langENFile | ConvertFrom-Yaml
 PAUSE
 
 
-CheckIfUpdateIsAvailable
+
+# Testweise Laden der Sprachen
+$lang = "en"
+$selectedLangConfig = if ($lang -eq "de") { $langDEConfig } else { $langENConfig }
+
+CheckIfUpdateIsAvailable -firstStart $firstStartInput
 
 
 
