@@ -58,6 +58,25 @@ function CheckIfUpdateIsAvailable {
     )
 
     # Definition der Funktion Get-LatestVersionFromGitHub zum abrufen der Versionsnummer aus tag_name von GitHub # Definition of the Get-LatestVersionFromGitHub function to retrieve the version number from tag_name from GitHub
+    function Get-LatestVersionFromGitHub_FirstStart($releaseUrlApi) {
+        # Variablen
+        # $releaseUrlApi = "https://api.github.com/repos/$repoOwner/$repoName/releases" # <-------- Use this if you also want to check for pre-releases
+        $releaseUrlApi = "https://api.github.com/repos/$repoOwner/$repoName/releases/latest"
+        try {
+            $response = Invoke-RestMethod -Uri $releaseUrlApi -Method Get
+            $latestVersion = $response.tag_name
+            return $latestVersion
+        }
+        catch {
+            Write-Host "GitHub API of MinecraftLogFilterScript not accessible." -ForegroundColor Red
+            Write-Host "It was not possible to check whether an update is available." -ForegroundColor Red
+            Write-Host "GitHub API von MinecraftLogFilterScript nicht erreichbar." -ForegroundColor Red
+            Write-Host "Es konnte nicht geprüft werden, ob ein Update verfügbar ist." -ForegroundColor Red
+            return $null
+        }
+    }
+
+    # Definition der Funktion Get-LatestVersionFromGitHub zum abrufen der Versionsnummer aus tag_name von GitHub # Definition of the Get-LatestVersionFromGitHub function to retrieve the version number from tag_name from GitHub
     function Get-LatestVersionFromGitHub($releaseUrlApi) {
         # Variablen
         # $releaseUrlApi = "https://api.github.com/repos/$repoOwner/$repoName/releases" # <-------- Use this if you also want to check for pre-releases
@@ -68,7 +87,7 @@ function CheckIfUpdateIsAvailable {
             return $latestVersion
         }
         catch {
-            Write-Host "GitHub API von MinecraftLogFilterScript nicht erreichbar." -ForegroundColor Red
+            Write-Host "GitHub API von MinecraftLogFilterScript nicht erreichbar." -ForegroundColor Red # ToDo In Variable ändern und in lang.yml einfügen
             Write-Host "Es konnte nicht geprüft werden, ob ein Update verfügbar ist." -ForegroundColor Red
             return $null
         }
@@ -224,7 +243,13 @@ function CheckIfUpdateIsAvailable {
 
 
     # Aufruf der Funktion Get-LatestVersionFromGitHub # Calling the Get-LatestVersionFromGitHub function
-    $lastVersion = Get-LatestVersionFromGitHub $releaseUrlApi
+    if (-not (Test-Path $configFile -PathType Leaf)) {
+        # Aufruf der Funktion CheckForUpdate
+        $lastVersion = Get-LatestVersionFromGitHub_FirstStart $releaseUrlApi
+    } else {
+        # Aufruf der Funktion CheckForUpdate
+        $lastVersion = Get-LatestVersionFromGitHub $releaseUrlApi
+    }
 
     # Trennung von Versionsnummer und Suffix für aktuelle und letzte Version # Separation of version number and suffix for current and last version
     $currentVersion, $currentVersionSurfix = Split-Version -version $currentVersion
@@ -388,36 +413,9 @@ CheckIfUpdateIsAvailable
 
 
 
-
-
-
-
-
-
-
-
 PAUSE
 
 
-
-
-
-    # Prüfen, ob die Config-Datei existiert, wenn nicht, prüfte auf Updates, bevor der restliche Code ausgeführt wird. 
-#    if (-not (Test-Path $configFile -PathType Leaf)) {
-        
-
-
-#    }
-
-
-
-
-
-
-
-
-
-<#
 
 
 # ! Skript von Version 0.0.1
@@ -427,16 +425,7 @@ PAUSE
 
 
 
-
-
-
-
-
-
-
-
-
-
+<#
 
 # Überprüfen der Konfigurationsversionen für die Sprachdateien
 if ($langDEConfig.langDEConfigVersion -ne $langDEFileVersion -or $langENConfig.langENConfigVersion -ne $langENFileVersion) {
