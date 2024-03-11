@@ -88,8 +88,8 @@ function CheckIfUpdateIsAvailable {
             return $latestVersion
         }
         catch {
-            Write-Host $selectedLangConfig.lastVersionFromGitHub_errorMessage1 -ForegroundColor Red
-            Write-Host $selectedLangConfig.lastVersionFromGitHub_errorMessage2 -ForegroundColor Red
+            Write-Host $selectedLangConfig.lang_lastVersionFromGitHub_errorMessage1 -ForegroundColor Red
+            Write-Host $selectedLangConfig.lang_lastVersionFromGitHub_errorMessage2 -ForegroundColor Red
             return $null
         }
     }
@@ -230,18 +230,18 @@ function CheckIfUpdateIsAvailable {
         $releaseUrl = "https://github.com/$repoOwner/$repoName/releases/latest"
         if ($lastVersion) {
             if (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -eq $lastVersionSurfixValueAsNumber) -or (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -gt $lastVersionSurfixValueAsNumber) -or ($currentVersion -gt $lastVersion))) {
-                Write-Host $selectedLangConfig.updateAvailable_info -ForegroundColor White
+                Write-Host $selectedLangConfig.lang_updateAvailable_info -ForegroundColor White
                 Write-Host ""
-                Write-Host $selectedLangConfig.updateAvailable_upToDate1 $currentVersion ($currentVersionSurfix) $selectedLangConfig.updateAvailable_upToDate2 -ForegroundColor Green
+                Write-Host $selectedLangConfig.lang_updateAvailable_upToDate1 $currentVersion ($currentVersionSurfix) $selectedLangConfig.lang_updateAvailable_upToDate2 -ForegroundColor Green
             } elseif (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -lt $lastVersionSurfixValueAsNumber) -or ($currentVersion -lt $lastVersion)) {
                 $answerChoose = $false
                 do {
                     Clear-Host
-                    Write-Host $selectedLangConfig.updateAvailable_info -ForegroundColor White
+                    Write-Host $selectedLangConfig.lang_updateAvailable_info -ForegroundColor White
                     Write-Host ""
-                    Write-Host $selectedLangConfig.updateAvailable_updateAvailable -ForegroundColor Yellow
-                    Write-Host $selectedLangConfig.updateAvailable_installedVersion $currentVersion ($currentVersionSurfix), $selectedLangConfig.updateAvailable_latestVersion $lastVersion ($lastVersionSurfix)
-                    $answer = Read-Host $selectedLangConfig.updateAvailable_askOpenDownloadPage
+                    Write-Host $selectedLangConfig.lang_updateAvailable_updateAvailable -ForegroundColor Yellow
+                    Write-Host $selectedLangConfig.lang_updateAvailable_installedVersion $currentVersion ($currentVersionSurfix), $selectedLangConfig.lang_updateAvailable_latestVersion $lastVersion ($lastVersionSurfix)
+                    $answer = Read-Host $selectedLangConfig.lang_updateAvailable_askOpenDownloadPage
 
                     if ($answer -eq "J" -or $answer -eq "j" -or $answer -eq "Y" -or $answer -eq "y") {
                         $answerChoose = $true
@@ -249,14 +249,14 @@ function CheckIfUpdateIsAvailable {
                     } elseif ($answer -eq "N" -or $answer -eq "n") {
                         $answerChoose = $true
                         Write-Host ""
-                        Write-Host $selectedLangConfig.updateAvailable_showDownloadPage1 -ForegroundColor White
+                        Write-Host $selectedLangConfig.lang_updateAvailable_showDownloadPage1 -ForegroundColor White
                         Write-Host ""
-                        Write-Host $selectedLangConfig.updateAvailable_showDownloadPage2 $releaseUrl $selectedLangConfig.updateAvailable_showDownloadPage3
-                        Write-Host $selectedLangConfig.updateAvailable_showDownloadPage4 $configFile $selectedLangConfig.updateAvailable_showDownloadPage5
-                        Read-Host $selectedLangConfig.updateAvailable_showDownloadPage6
+                        Write-Host $selectedLangConfig.lang_updateAvailable_showDownloadPage2 $releaseUrl $selectedLangConfig.lang_updateAvailable_showDownloadPage3
+                        Write-Host $selectedLangConfig.lang_updateAvailable_showDownloadPage4 $configFile $selectedLangConfig.lang_updateAvailable_showDownloadPage5
+                        Read-Host $selectedLangConfig.lang_updateAvailable_showDownloadPage6
                     } else {
                         Write-Host ""
-                        Write-Host $selectedLangConfig.invalideSelection -ForegroundColor Red
+                        Write-Host $selectedLangConfig.lang_invalideSelection -ForegroundColor Red
                         Start-Sleep -Seconds 1
                     }
                 } while ($false -eq $answerChoose)
@@ -325,36 +325,36 @@ function Write-YamlDEToFile {
 langDEConfigVersion: "$langDEFileVersion"
 
 # Die deutschen Texte
-lastVersionFromGitHub_errorMessage1: "GitHub API von MinecraftLogFilterScript nicht erreichbar."
-lastVersionFromGitHub_errorMessage2: "Es konnte nicht geprüft werden, ob ein Update verfügbar ist."
-updateAvailable_info: "Info"
-updateAvailable_upToDate1: "Die installierte Version:"
-updateAvailable_upToDate2: "ist auf dem neuesten Stand."
-updateAvailable_updateAvailable: "Es ist ein Update verfügbar!"
-updateAvailable_installedVersion: "Installierte Version:"
-updateAvailable_latestVersion: "Neueste Version:"
-updateAvailable_askOpenDownloadPage: "Möchten Sie die Downloadseite zur letzten Version in Ihrem Browser öffnen? (J/N)"
-updateAvailable_showDownloadPage1: "Update"
-updateAvailable_showDownloadPage2: "Öffnen Sie die Seite"
-updateAvailable_showDownloadPage3: ", um das neueste Update anzuzeigen."
-updateAvailable_showDownloadPage4: "Sie können auch die Suche nach Updates in der"
-updateAvailable_showDownloadPage5: "deaktivieren."
-updateAvailable_showDownloadPage6: "Drücken Sie eine beliebige Taste, um fortzufahren ..."
-invalideSelection: "Ungültige Auswahl."
-configCreatedMessage: "Die Konfigurationsdatei '{0}' wurde erstellt."
-configEditMessage: "Bitte bearbeiten Sie diese Datei, um die Sprache, Filterbegriffe und Ordnerpfade anzupassen."
-pressAnyKeyContinueMessage: "Drücken Sie eine beliebige Taste, um fortzufahren."
-foldersCreatedMessage: "Es wurden Ordner erstellt:"
-filesAddedMessage: "Bitte füge im Ordner {0} die zu filternde/n Log-Dateie/n ein. Fahre anschließend fort."
-restartScriptMessage: "Fahre anschließend fort."
-filesNotFoundMessage: "Bitte füge im Ordner {0} die zu filternde/n Log-Dateie/n ein."
-processingLogsMessage: "Die Log-Dateien werden verarbeitet. Bitte habe einen Moment Geduld."
-pleaseWaitMessage: "Bitte warten..."
-processingFinishAMessage: "Die Verarbeitung von"
-processingFinishBMessage: "war erfolgreich."
-processingFinishFoundMessage: "Gefunden"
-processingFinishFolderInfoMessage: "Sie finden die Filterergebnisse unter"
-scriptFinishedMessage: "Sie können das Konsolenfenster nun schließen oder mit einer beliebigen Taste neu starten!"
+lang_lastVersionFromGitHub_errorMessage1: "GitHub API von MinecraftLogFilterScript nicht erreichbar."
+lang_lastVersionFromGitHub_errorMessage2: "Es konnte nicht geprüft werden, ob ein Update verfügbar ist."
+lang_updateAvailable_info: "Info"
+lang_updateAvailable_upToDate1: "Die installierte Version:"
+lang_updateAvailable_upToDate2: "ist auf dem neuesten Stand."
+lang_updateAvailable_updateAvailable: "Es ist ein Update verfügbar!"
+lang_updateAvailable_installedVersion: "Installierte Version:"
+lang_updateAvailable_latestVersion: "Neueste Version:"
+lang_updateAvailable_askOpenDownloadPage: "Möchten Sie die Downloadseite zur letzten Version in Ihrem Browser öffnen? (J/N)"
+lang_updateAvailable_showDownloadPage1: "Update"
+lang_updateAvailable_showDownloadPage2: "Öffnen Sie die Seite"
+lang_updateAvailable_showDownloadPage3: ", um das neueste Update anzuzeigen."
+lang_updateAvailable_showDownloadPage4: "Sie können auch die Suche nach Updates in der"
+lang_updateAvailable_showDownloadPage5: "deaktivieren."
+lang_updateAvailable_showDownloadPage6: "Drücken Sie eine beliebige Taste, um fortzufahren ..."
+lang_invalideSelection: "Ungültige Auswahl."
+lang_configCreatedMessage: "Die Konfigurationsdatei '{0}' wurde erstellt."
+lang_configEditMessage: "Bitte bearbeiten Sie diese Datei, um die Sprache, Filterbegriffe und Ordnerpfade anzupassen."
+lang_pressAnyKeyContinueMessage: "Drücken Sie eine beliebige Taste, um fortzufahren."
+lang_foldersCreatedMessage: "Es wurden Ordner erstellt:"
+lang_filesAddedMessage: "Bitte füge im Ordner {0} die zu filternde/n Log-Dateie/n ein. Fahre anschließend fort."
+lang_restartScriptMessage: "Fahre anschließend fort."
+lang_filesNotFoundMessage: "Bitte füge im Ordner {0} die zu filternde/n Log-Dateie/n ein."
+lang_processingLogsMessage: "Die Log-Dateien werden verarbeitet. Bitte habe einen Moment Geduld."
+lang_pleaseWaitMessage: "Bitte warten..."
+lang_processingFinishAMessage: "Die Verarbeitung von"
+lang_processingFinishBMessage: "war erfolgreich."
+lang_processingFinishFoundMessage: "Gefunden"
+lang_processingFinishFolderInfoMessage: "Sie finden die Filterergebnisse unter"
+lang_scriptFinishedMessage: "Sie können das Konsolenfenster nun schließen oder mit einer beliebigen Taste neu starten!"
 "@
     $defaultLangDEConfig | Out-File -FilePath $FilePath -Encoding utf8
 }
@@ -368,38 +368,38 @@ function Write-YamlENToFile {
 langENConfigVersion: "$langENFileVersion"
 
 # English texts here
-lastVersionFromGitHub_errorMessage1: "GitHub API of MinecraftLogFilterScript not accessible."
-lastVersionFromGitHub_errorMessage2: "It was not possible to check whether an update is available."
-updateAvailable_info: "Info"
-updateAvailable_upToDate1: "The installed version:"
-updateAvailable_upToDate2: "is up to date."
-updateAvailable_updateAvailable: "An update is available!"
-updateAvailable_installedVersion: "Installed version:"
-updateAvailable_latestVersion: "Latest version:"
-updateAvailable_askOpenDownloadPage: "Would you like to open the download page for the latest version in your browser? (Y/N)"
-updateAvailable_showDownloadPage1: "Update"
-updateAvailable_showDownloadPage2: "Open the"
-updateAvailable_showDownloadPage3: "page to display the latest update."
-updateAvailable_showDownloadPage4: "You can also deactivate the search for updates in the"
-updateAvailable_showDownloadPage5: "."
-updateAvailable_showDownloadPage6: "Press any button to continue ..."
-invalideSelection: "Invalid selection."
-configCreatedMessage: "The configuration file '{0}' has been created."
-configEditMessage: "Please edit this file to customize the language, filter terms and folder paths."
-pressAnyKeyContinueMessage: "Press any button to continue."
-foldersCreatedMessage: "Folders have been created:"
-filesAddedMessage: "Please add the log file(s) to be filtered in the folder {0}. Then continue."
-restartScriptMessage: "Then continue."
-filesNotFoundMessage: "Please add the log file/s to be filtered in the folder {0}."
-processingLogsMessage: "The log files are being processed. Please be patient for a moment."
-pleaseWaitMessage: "Please wait..."
+lang_lastVersionFromGitHub_errorMessage1: "GitHub API of MinecraftLogFilterScript not accessible."
+lang_lastVersionFromGitHub_errorMessage2: "It was not possible to check whether an update is available."
+lang_updateAvailable_info: "Info"
+lang_updateAvailable_upToDate1: "The installed version:"
+lang_updateAvailable_upToDate2: "is up to date."
+lang_updateAvailable_updateAvailable: "An update is available!"
+lang_updateAvailable_installedVersion: "Installed version:"
+lang_updateAvailable_latestVersion: "Latest version:"
+lang_updateAvailable_askOpenDownloadPage: "Would you like to open the download page for the latest version in your browser? (Y/N)"
+lang_updateAvailable_showDownloadPage1: "Update"
+lang_updateAvailable_showDownloadPage2: "Open the"
+lang_updateAvailable_showDownloadPage3: "page to display the latest update."
+lang_updateAvailable_showDownloadPage4: "You can also deactivate the search for updates in the"
+lang_updateAvailable_showDownloadPage5: "."
+lang_updateAvailable_showDownloadPage6: "Press any button to continue ..."
+lang_invalideSelection: "Invalid selection."
+lang_configCreatedMessage: "The configuration file '{0}' has been created."
+lang_configEditMessage: "Please edit this file to customize the language, filter terms and folder paths."
+lang_pressAnyKeyContinueMessage: "Press any button to continue."
+lang_foldersCreatedMessage: "Folders have been created:"
+lang_filesAddedMessage: "Please add the log file(s) to be filtered in the folder {0}. Then continue."
+lang_restartScriptMessage: "Then continue."
+lang_filesNotFoundMessage: "Please add the log file/s to be filtered in the folder {0}."
+lang_processingLogsMessage: "The log files are being processed. Please be patient for a moment."
+lang_pleaseWaitMessage: "Please wait..."
 processingFinishMessage: "Processing successful!"
 processingResultMessage: "Result:"
-processingFinishAMessage: "The processing of"
-processingFinishBMessage: "was successful."
-processingFinishFoundMessage: "Found"
-processingFinishFolderInfoMessage: "You can find the filter results under"
-scriptFinishedMessage: "You can now close the console window or restart it by pressing any key!"
+lang_processingFinishAMessage: "The processing of"
+lang_processingFinishBMessage: "was successful."
+lang_processingFinishFoundMessage: "Found"
+lang_processingFinishFolderInfoMessage: "You can find the filter results under"
+lang_scriptFinishedMessage: "You can now close the console window or restart it by pressing any key!"
 "@
     $defaultLangENConfig | Out-File -FilePath $FilePath -Encoding utf8
 }
@@ -650,10 +650,10 @@ $selectedLangConfig = if ($lang -eq "de") { $langDEConfig } else { $langENConfig
 
     # Ausgabe der Meldung im Konsolenfenster
     Clear-Host
-    Write-Host "$($selectedLangConfig.configCreatedMessage -f $configFile)" -ForegroundColor Yellow
-    Write-Host $selectedLangConfig.configEditMessage -ForegroundColor Yellow
+    Write-Host "$($selectedLangConfig.lang_configCreatedMessage -f $configFile)" -ForegroundColor Yellow
+    Write-Host $selectedLangConfig.lang_configEditMessage -ForegroundColor Yellow
     Write-Host ""
-    Write-Host $selectedLangConfig.pressAnyKeyContinueMessage -ForegroundColor Red
+    Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
     [void][System.Console]::ReadKey() # Warten auf Tastendruck
     Clear-Host
     & $MyInvocation.MyCommand.Path # Skript erneut starten
@@ -682,14 +682,14 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
 
     # Ausgabe der Meldung im Konsolenfenster
     Clear-Host
-    Write-Host ($selectedLangConfig.foldersCreatedMessage -f $sourceFolder) -ForegroundColor White
+    Write-Host ($selectedLangConfig.lang_foldersCreatedMessage -f $sourceFolder) -ForegroundColor White
     Write-Host " - $sourceFolder" -ForegroundColor Green  # Diese Zeile hinzufügen
     Write-Host " - $processedFolder" -ForegroundColor Green
     Write-Host " - $outputFolder" -ForegroundColor Green
     Write-Host ""
-    Write-Host "$($selectedLangConfig.filesAddedMessage -f $sourceFolder)" -ForegroundColor White
+    Write-Host "$($selectedLangConfig.lang_filesAddedMessage -f $sourceFolder)" -ForegroundColor White
     Write-Host ""
-    Write-Host $selectedLangConfig.pressAnyKeyContinueMessage -ForegroundColor Red
+    Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
     [void][System.Console]::ReadKey() # Warten auf Tastendruck
     Clear-Host
     & $MyInvocation.MyCommand.Path # Skript erneut starten
@@ -701,12 +701,12 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
     if ($sourceFiles.Count -eq 0) {
         # Ausgabe der Meldung im Konsolenfenster
         Clear-Host
-        Write-Host "$($selectedLangConfig.filesNotFoundMessage -f $sourceFolder)" -ForegroundColor White
+        Write-Host "$($selectedLangConfig.lang_filesNotFoundMessage -f $sourceFolder)" -ForegroundColor White
         Write-Host " -> $sourceFolder" -ForegroundColor Cyan
         Write-Host ""
-        Write-Host $selectedLangConfig.restartScriptMessage -ForegroundColor White
+        Write-Host $selectedLangConfig.lang_restartScriptMessage -ForegroundColor White
         Write-Host ""
-        Write-Host $selectedLangConfig.pressAnyKeyContinueMessage -ForegroundColor Red
+        Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
         [void][System.Console]::ReadKey() # Warten auf Tastendruck
         Clear-Host
         & $MyInvocation.MyCommand.Path # Skript erneut starten
@@ -725,8 +725,8 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
 
         # Meldung vor dem Verarbeiten der Log-Dateien anzeigen
         Clear-Host
-        Write-Host $selectedLangConfig.processingLogsMessage -ForegroundColor Yellow
-        Write-Host $selectedLangConfig.pleaseWaitMessage -ForegroundColor Yellow
+        Write-Host $selectedLangConfig.lang_processingLogsMessage -ForegroundColor Yellow
+        Write-Host $selectedLangConfig.lang_pleaseWaitMessage -ForegroundColor Yellow
         Write-Host ""
 
         # Filtervorgang für jede Logdatei durchführen
@@ -768,11 +768,11 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
             }
 
             # Ausgabe der verarbeiteten Dateinamen und der Anzahl der gefundenen Schlagwörter
-            Write-Host "$($selectedLangConfig.processingFinishAMessage) '$($sourceFile.Name)' $($selectedLangConfig.processingFinishBMessage)" -ForegroundColor Green
-            Write-Host "    $($selectedLangConfig.processingFinishFolderInfoMessage):" -ForegroundColor White
+            Write-Host "$($selectedLangConfig.lang_processingFinishAMessage) '$($sourceFile.Name)' $($selectedLangConfig.lang_processingFinishBMessage)" -ForegroundColor Green
+            Write-Host "    $($selectedLangConfig.lang_processingFinishFolderInfoMessage):" -ForegroundColor White
             Write-Host "     - $($processedFolder)\$($sourceFileName)" -ForegroundColor Cyan
 
-            Write-Host "    $($selectedLangConfig.processingFinishFoundMessage):" -ForegroundColor White
+            Write-Host "    $($selectedLangConfig.lang_processingFinishFoundMessage):" -ForegroundColor White
             foreach ($key in $counter.Keys) {
                 Write-Host "     - `"$key`": $($counter[$key])x;" -ForegroundColor Yellow
             }
@@ -792,7 +792,7 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
 
 # Ausgabe der Abschlussmeldung
 Write-Host "" -ForegroundColor White
-Write-Host $selectedLangConfig.scriptFinishedMessage -ForegroundColor Red
+Write-Host $selectedLangConfig.lang_scriptFinishedMessage -ForegroundColor Red
 [void][System.Console]::ReadKey() # Warten auf Tastendruck
 & $MyInvocation.MyCommand.Path # Skript erneut starten
 
