@@ -52,7 +52,7 @@ CheckFileAndExecute -filePath "C:\Pfad\Zur\Datei.txt"
 # >>>>Funktionen<<<<
 function CheckIfUpdateIsAvailable {
     param (
-        [string]$currentVersion = "0.0.1-alpha", # <----------- VERSION
+        [string]$currentVersion = "0.0.2-alpha", # <----------- VERSION
         [string]$repoOwner = "RaptorXilef",
         [string]$repoName = "MinecraftLogFilterScript",
         [bool] $firstStart
@@ -201,8 +201,7 @@ function CheckIfUpdateIsAvailable {
                     if ($answer -eq "J" -or $answer -eq "j" -or $answer -eq "Y" -or $answer -eq "y") {
                         $answerChoose = $true
                         Start-Process $releaseUrl
-                    }
-                    elseif ($answer -eq "N" -or $answer -eq "n") {
+                    } elseif ($answer -eq "N" -or $answer -eq "n") {
                         $answerChoose = $true
                         Write-Host ""
                         Write-Host "Update" -ForegroundColor White
@@ -247,8 +246,7 @@ function CheckIfUpdateIsAvailable {
                     if ($answer -eq "J" -or $answer -eq "j" -or $answer -eq "Y" -or $answer -eq "y") {
                         $answerChoose = $true
                         Start-Process $releaseUrl
-                    }
-                    elseif ($answer -eq "N" -or $answer -eq "n") {
+                    } elseif ($answer -eq "N" -or $answer -eq "n") {
                         $answerChoose = $true
                         Write-Host ""
                         Write-Host $selectedLangConfig.updateAvailable_showDownloadPage1 -ForegroundColor White
@@ -406,6 +404,64 @@ scriptFinishedMessage: "You can now close the console window or restart it by pr
     $defaultLangENConfig | Out-File -FilePath $FilePath -Encoding utf8
 }
 
+function UpdateLangFilesIfOutDate {
+    param (
+        [string]$configFolder,
+        [string]$langDEFile,
+        [string]$langENFile,
+        [string]$langDEFileVersion,
+        [string]$langENFileVersion
+    )
+
+    if ($langDEConfig.langDEConfigVersion -ne $langDEFileVersion) {
+        # Umbenennen der vorhandenen deutschen Sprachdatei mit einem zählenden Suffix
+        $count = 0
+        while (Test-Path $langDEFile) {
+            $count++
+            $newName = "lang-de-old$count.yml"
+            # Write-Host "$configFolder$newName" -ForegroundColor GREEN # ? Zur Fehleranalyse
+            if (-not (Test-Path $configFolder$newName)) {
+                Rename-Item -Path $langDEFile -NewName $newName
+                break
+            }
+            Start-Sleep -Milliseconds 100  # Kurze Wartezeit
+        }
+        
+        Start-Sleep -Seconds 1
+        # Erstellen einer neuen deutschen Sprachdatei mit den Standardinhalten
+        Write-YamlDEToFile -FilePath $langDEFile
+        Write-Host ""
+        Write-Host "[DE] Die Datei: $langDEFile entsprach nicht der benötigten Version und wurde daher neu erstellt." -ForegroundColor Red
+        Write-Host "Von der ursprünglichen Datei wurde ein Backup angelegt." -ForegroundColor Red
+        Write-Host "[EN] The file: $langDEFile did not correspond to the required version and was therefore recreated." -ForegroundColor Red
+        Write-Host "A backup of the original file was created." -ForegroundColor Red
+    }
+
+    if ($langENConfig.langENConfigVersion -ne $langENFileVersion) {
+        # Umbenennen der vorhandenen englischen Sprachdatei mit einem zählenden Suffix
+        $count = 0
+        while (Test-Path $langENFile) {
+            $count++
+            $newName = "lang-en-old$count.yml"
+            # Write-Host "$configFolder$newName" -ForegroundColor GREEN # ? Zur Fehleranalyse
+            if (-not (Test-Path $configFolder$newName)) {
+                Rename-Item -Path $langENFile -NewName $newName
+                break
+            }
+            Start-Sleep -Milliseconds 100  # Kurze Wartezeit
+        }
+        Start-Sleep -Seconds 1
+        # Erstellen einer neuen englischen Sprachdatei mit den Standardinhalten
+        Write-YamlENToFile -FilePath $langENFile
+        Write-Host ""
+        Write-Host "[DE] Die Datei: $langENFile entsprach nicht der benötigten Version und wurde daher neu erstellt." -ForegroundColor Red
+        Write-Host "Von der ursprünglichen Datei wurde ein Backup angelegt." -ForegroundColor Red
+        Write-Host "[EN] The file: $langENFile did not correspond to the required version and was therefore recreated." -ForegroundColor Red
+        Write-Host "A backup of the original file was created." -ForegroundColor Red
+    }
+}
+
+
 
 
 
@@ -468,6 +524,25 @@ $langDEConfig = Get-Content $langDEFile | ConvertFrom-Yaml
 # Laden der Sprachkonfiguration für Englisch
 $langENConfig = Get-Content $langENFile | ConvertFrom-Yaml
 
+if ($langDEConfig.langDEConfigVersion -ne $langDEFileVersion -or $langENConfig.langENConfigVersion -ne $langENFileVersion) {
+    # Aufruf der Funktion für die Aktualisierung der Sprachdateien bei nicht Übereinstimmung der Versionsnummer
+    UpdateLangFilesIfOutDate -configFolder $configFolder -langDEFile $langDEFile -langENFile $langENFile -langDEFileVersion $langDEFileVersion -langENFileVersion $langENFileVersion
+    $langDEConfig = Get-Content $langDEFile | ConvertFrom-Yaml
+    $langENConfig = Get-Content $langENFile | ConvertFrom-Yaml
+}
+
+
+
+
+
+
+
+
+
+PAUSE
+
+EXIT
+
 
 
 
@@ -497,27 +572,6 @@ PAUSE
 
 
 <#
-
-# Überprüfen der Konfigurationsversionen für die Sprachdateien
-if ($langDEConfig.langDEConfigVersion -ne $langDEFileVersion -or $langENConfig.langENConfigVersion -ne $langENFileVersion) {
-    # Umbenennen der vorhandenen Sprachdateien mit zählenden Suffixen
-    $count = 0
-    while (Test-Path $langDEFile) {
-        $count++
-        $newName = "lang-de-old$count.yml"
-        Rename-Item -Path $langDEFile -NewName $newName
-    }
-    $count = 0
-    while (Test-Path $langENFile) {
-        $count++
-        $newName = "lang-en-old$count.yml"
-        Rename-Item -Path $langENFile -NewName $newName
-    }
-    
-    # Erstellen neuer Sprachdateien mit den Standardinhalten
-    $defaultLangDEConfig | Out-File -FilePath $langDEFile -Encoding utf8
-    $defaultLangENConfig | Out-File -FilePath $langENFile -Encoding utf8
-}
 
 # Nutzer nach Sprachwahl fragen und entsprechende Variable in der Konfigurationsdatei festlegen
 if (-not (Test-Path $configFile -PathType Leaf)) {
