@@ -22,32 +22,8 @@ Lizenz: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
 # ToDo 1. Mit "Visual Studio Code" gefundene Fehler beseitigen ✔
 # ToDo 2. Code nach konvention strukturieren und in Formeln aufgliedern
 # ToDo 3. Nach update suchen, bevor eine config.yml existiert, wenn existiert erst: ✔
-# ToDo     Updatefunktion am Ende des Skripts ausführen, nach der Ausgabe der gefilterten Daten
+# ToDo     Updatefunktion am Ende des Skripts ausführen, nach der Ausgabe der gefilterten Daten ✔
 # Todo 4. Funktion einbauen, in Config die Updates zu deaktivieren/aktivieren. 
-
-<#
-Beispielshema:
-function CheckFileAndExecute {
-    param (
-        [string]$filePath
-    )
-
-    # Überprüfen, ob die Datei existiert
-    if (Test-Path $filePath -PathType Leaf) {
-        $variable = 0
-    } else {
-        $variable = 1
-    }
-
-    # Restlicher Code, der unabhängig vom Ergebnis der Dateiüberprüfung ausgeführt wird
-    # Hier können Sie den restlichen Code einfügen, der unabhängig vom Dateiexistenzstatus ausgeführt werden soll
-    Write-Host "Variable: $variable"
-    Write-Host "Weiterer Code, der immer ausgeführt wird"
-}
-
-# Beispielaufruf der Funktion
-CheckFileAndExecute -filePath "C:\Pfad\Zur\Datei.txt"
-#>
 
 # >>>>Funktionen<<<<
 function CheckIfUpdateIsAvailable {
