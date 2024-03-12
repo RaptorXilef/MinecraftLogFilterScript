@@ -14,7 +14,6 @@ Führt das Skript aus, um die Minecraft-Server-Logdateien zu filtern und zu vera
 
 .NOTES
 Projektname: MinecraftLogFilterScript
-Version: 1.0
 Autor: RaptorXilef
 GitHub: https://github.com/raptorxilef/MinecraftLogFilterScript
 Lizenz: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
