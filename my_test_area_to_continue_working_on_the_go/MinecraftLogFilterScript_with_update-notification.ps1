@@ -52,9 +52,9 @@ CheckFileAndExecute -filePath "C:\Pfad\Zur\Datei.txt"
 # >>>>Funktionen<<<<
 function CheckIfUpdateIsAvailable {
     param (
-        [string]$currentVersion = "0.0.2-alpha", # <----------- VERSION
-        [string]$repoOwner = "RaptorXilef",
-        [string]$repoName = "MinecraftLogFilterScript",
+        [string]$currentVersion,
+        [string]$repoOwner,
+        [string]$repoName,
         [bool] $firstStart
     )
 
@@ -559,6 +559,135 @@ function set-Language {
     return $selectedLang
 }
 
+function create-WorkFolders {
+    param (
+        [string]$sourceFolder,
+        [string]$outputFolder,
+        [string]$processedFolder
+    )
+
+    # Erstellen der Ordner, falls sie nicht existieren
+    New-Item -ItemType Directory -Path $sourceFolder -Force | Out-Null
+    New-Item -ItemType Directory -Path $outputFolder -Force | Out-Null
+    New-Item -ItemType Directory -Path $processedFolder -Force | Out-Null
+
+    # Ausgabe der Meldung im Konsolenfenster
+    Clear-Host
+    Write-Host ($selectedLangConfig.lang_foldersCreatedMessage -f $sourceFolder) -ForegroundColor White
+    Write-Host " - $sourceFolder" -ForegroundColor Green  # Diese Zeile hinzufügen
+    Write-Host " - $processedFolder" -ForegroundColor Green
+    Write-Host " - $outputFolder" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "$($selectedLangConfig.lang_filesAddedMessage -f $sourceFolder)" -ForegroundColor White
+    Write-Host ""
+    Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
+    [void][System.Console]::ReadKey() # Warten auf Tastendruck
+    Clear-Host
+}
+
+function missing-logFiles {
+    param (
+        [string]$sourceFolder
+    )
+
+    # Ausgabe der Meldung im Konsolenfenster
+    Clear-Host
+    Write-Host "$($selectedLangConfig.lang_filesNotFoundMessage -f $sourceFolder)" -ForegroundColor White
+    Write-Host " -> $sourceFolder" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host $selectedLangConfig.lang_restartScriptMessage -ForegroundColor White
+    Write-Host ""
+    Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
+    [void][System.Console]::ReadKey() # Warten auf Tastendruck
+    Clear-Host
+}
+
+
+function filter-logFiles {
+    param (
+        [string]$outputFolder,
+        [string]$processedFolder
+    )
+
+    # Prüfen, ob $outputFolder existiert
+    if (-not (Test-Path $outputFolder -PathType Container)) {
+        # Erstellen des Ordners, falls er nicht existiert
+        New-Item -ItemType Directory -Path $outputFolder -Force | Out-Null
+    }
+
+    # Prüfen, ob $processedFolder existiert
+    if (-not (Test-Path $processedFolder -PathType Container)) {
+        # Erstellen des Ordners, falls er nicht existiert
+        New-Item -ItemType Directory -Path $processedFolder -Force | Out-Null
+    }
+
+    # Meldung vor dem Verarbeiten der Log-Dateien anzeigen
+    Clear-Host
+    Write-Host $selectedLangConfig.lang_processingLogsMessage -ForegroundColor Yellow
+    Write-Host $selectedLangConfig.lang_pleaseWaitMessage -ForegroundColor Yellow
+    Write-Host ""
+
+    # Filtervorgang für jede Logdatei durchführen
+    foreach ($sourceFile in $sourceFiles) {
+        # Pfad zur Log-Datei setzen
+        $sourceFilePath = $sourceFile.FullName
+
+        # Setze den Namen der Log-Datei und des Ausgabeverzeichnisses
+        $sourceFileName = [System.IO.Path]::GetFileNameWithoutExtension($sourceFile.Name)
+
+        # Setze den Filterzeitstempel neu
+        $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+        $outputDirectory = New-Item -ItemType Directory -Path "$outputFolder\$sourceFileName`_-_gefiltert_am_$timestamp" -Force
+
+        # Initialisiere Zähler
+        $counter = @{
+            "ERROR" = 0
+            "WARN" = 0
+            "update" = 0
+            "not found" = 0
+            "left the game" = 0
+            "joined the game" = 0
+            "version" = 0
+            "logged in with" = 0
+        }
+
+        # Durchführen des Filtervorgangs und Zählen der gefundenen Schlagwörter
+        Get-Content $sourceFilePath | ForEach-Object -Begin {
+            $lineNumber = 0
+        } -Process {
+            $lineNumber++
+            $line = "$lineNumber`:`t$_"
+            foreach ($keyword in $config.keywords) {
+                if ($_ -match $keyword) {
+                    $counter[$keyword]++
+                    $line | Out-File -Append "$outputDirectory\$keyword.log" -Encoding utf8
+                }
+            }
+        }
+
+        # Ausgabe der verarbeiteten Dateinamen und der Anzahl der gefundenen Schlagwörter
+        Write-Host "$($selectedLangConfig.lang_processingFinishAMessage) '$($sourceFile.Name)' $($selectedLangConfig.lang_processingFinishBMessage)" -ForegroundColor Green
+        Write-Host "    $($selectedLangConfig.lang_processingFinishFolderInfoMessage):" -ForegroundColor White
+        Write-Host "     - $($processedFolder)\$($sourceFileName)" -ForegroundColor Cyan
+
+        Write-Host "    $($selectedLangConfig.lang_processingFinishFoundMessage):" -ForegroundColor White
+        foreach ($key in $counter.Keys) {
+            Write-Host "     - `"$key`": $($counter[$key])x;" -ForegroundColor Yellow
+        }
+        Write-Host ""
+
+        # Verschieben der verarbeiteten Datei in den Zielordner mit Prüfung auf vorhandene Dateinamen
+        $destination = "$processedFolder\$($sourceFile.Name)"
+        $counterSuffix = 1
+        while (Test-Path $destination) {
+            $destination = "$processedFolder\$($sourceFileName)_$counterSuffix$($sourceFile.Extension)"
+            $counterSuffix++
+        }
+        Move-Item -Path $sourceFilePath -Destination $destination -Force
+    }
+
+}
+
 
 
 
@@ -576,6 +705,11 @@ function set-Language {
     # Pfad zur Sprachkonfigurationsdatei für Englisch
     $langENFile = $configFolder + "lang-en.yml"
 
+    # Aktuelle Versionsnummer und Repository-Daten von GitHub zum Abrufen der Versionsnummer aus der GitHub-API # Current version number and repository data from GitHub to retrieve the version number from the GitHub API
+    $currentVersion = "0.0.2-alpha" # <----------- VERSION
+    $repoOwner = "RaptorXilef"
+    $repoName = "MinecraftLogFilterScript"
+
     # Versionsvariablen für die Konfigurationsdatei und die Sprachkonfigurationsdateien
     $configFileVersion = "1"
     $langDEFileVersion = "2"
@@ -587,8 +721,8 @@ function set-Language {
 # >>>>Abrufen der Funktionen<<<<
 # Überprüfen, ob das Modul powershell-yaml installiert ist, wenn nicht, installiere es
 if (-not (Get-Module -Name powershell-yaml -ListAvailable)) {
-    Write-Host "[EN] The module 'powershell-yaml' is needed to read the config.yml, which contains the filter settings. It will now be installed..." -ForegroundColor Yellow
     Write-Host "[DE] Das Modul 'powershell-yaml' wird benötigt um die config.yml zu lesen, welche die Filtereinstellungen enthält. Es wird jetzt installiert..." -ForegroundColor Yellow
+    Write-Host "[EN] The module 'powershell-yaml' is needed to read the config.yml, which contains the filter settings. It will now be installed..." -ForegroundColor Yellow
     Install-Module -Name powershell-yaml -Scope CurrentUser -Force
     Import-Module -Name powershell-yaml
 } else {
@@ -599,8 +733,12 @@ if (-not (Get-Module -Name powershell-yaml -ListAvailable)) {
 # Prüfen, ob $configFolder existiert
 if (-not (Test-Path $configFolder -PathType Container)) {
     $firstStartInput = $true
+    Write-Host "[DE] Prüfe auf Updates. Bitte warten!" -ForegroundColor Green
+    Write-Host "[EN] Check for updates. Please wait!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host ""
     #Prüfe auf Updates bevor das Skript das erste mal ausgeführt wird
-    CheckIfUpdateIsAvailable -firstStart $firstStartInput
+    CheckIfUpdateIsAvailable -firstStart $firstStartInput -currentVersion $currentVersion -repoOwner $repoOwner -repoName $repoName
     Start-Sleep -Seconds 3
     # Erstellen des Ordners, falls er nicht existiert
     New-Item -ItemType Directory -Path $configFolder -Force | Out-Null
@@ -645,168 +783,39 @@ $config = Get-Content $configFile | ConvertFrom-Yaml
 $lang = $config.lang
 $selectedLangConfig = if ($lang -eq "de") { $langDEConfig } elseif  ($lang -eq "en") { $langENConfig } else {$langENConfig}
 
-
-
-
-
-
-
-
-PAUSE
-
-
-
-
-EXIT
-
-
-
-
-
-
-# ! Skript von Version 0.0.1
-# ToDo Skript neu aufbauen, nach den neu erlernten konventionen: erst Funktionen definieren, dann Variablen laden, dann Funktionen ausführen. Nach diesem Shema ändern!
-
-
-
-
-
-<#
-
-
-
-
-# Laden der Konfiguration aus der Datei
-$config = Get-Content $configFile | ConvertFrom-Yaml
-
-# Festlegen der Variablen für Ordner aus der Konfiguration
+# Festlegen der Variablen für Pfade aus der Konfiguration
 $sourceFolder = $configFolder + $config.sourceFolder
 $outputFolder = $configFolder + $config.outputFolder
 $processedFolder = $configFolder + $config.processedFolder
 
 # Prüfen, ob $sourceFolder existiert
 if (-not (Test-Path $sourceFolder -PathType Container)) {
-    # Erstellen der Ordner, falls sie nicht existieren
-    New-Item -ItemType Directory -Path $sourceFolder -Force | Out-Null
-    New-Item -ItemType Directory -Path $outputFolder -Force | Out-Null
-    New-Item -ItemType Directory -Path $processedFolder -Force | Out-Null
-
-    # Ausgabe der Meldung im Konsolenfenster
-    Clear-Host
-    Write-Host ($selectedLangConfig.lang_foldersCreatedMessage -f $sourceFolder) -ForegroundColor White
-    Write-Host " - $sourceFolder" -ForegroundColor Green  # Diese Zeile hinzufügen
-    Write-Host " - $processedFolder" -ForegroundColor Green
-    Write-Host " - $outputFolder" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "$($selectedLangConfig.lang_filesAddedMessage -f $sourceFolder)" -ForegroundColor White
-    Write-Host ""
-    Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
-    [void][System.Console]::ReadKey() # Warten auf Tastendruck
-    Clear-Host
+    create-WorkFolders -sourceFolder $sourceFolder -outputFolder $outputFolder -processedFolder $processedFolder
     & $MyInvocation.MyCommand.Path # Skript erneut starten
+    EXIT
 } else {
     # Erfassen aller Dateien im $sourceFolder
     $sourceFiles = Get-ChildItem -Path $sourceFolder -File
     # Filtern der Dateien, um nur diejenigen mit der Endung ".log" beizubehalten
     $sourceFiles = $sourceFiles | Where-Object { $_.Extension -eq ".log" }
     if ($sourceFiles.Count -eq 0) {
-        # Ausgabe der Meldung im Konsolenfenster
-        Clear-Host
-        Write-Host "$($selectedLangConfig.lang_filesNotFoundMessage -f $sourceFolder)" -ForegroundColor White
-        Write-Host " -> $sourceFolder" -ForegroundColor Cyan
-        Write-Host ""
-        Write-Host $selectedLangConfig.lang_restartScriptMessage -ForegroundColor White
-        Write-Host ""
-        Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
-        [void][System.Console]::ReadKey() # Warten auf Tastendruck
-        Clear-Host
+        missing-logFiles -sourceFolder $sourceFolder
         & $MyInvocation.MyCommand.Path # Skript erneut starten
+        EXIT
     } else {
-        # Prüfen, ob $outputFolder existiert
-        if (-not (Test-Path $outputFolder -PathType Container)) {
-            # Erstellen des Ordners, falls er nicht existiert
-            New-Item -ItemType Directory -Path $outputFolder -Force | Out-Null
-        }
-
-        # Prüfen, ob $processedFolder existiert
-        if (-not (Test-Path $processedFolder -PathType Container)) {
-            # Erstellen des Ordners, falls er nicht existiert
-            New-Item -ItemType Directory -Path $processedFolder -Force | Out-Null
-        }
-
-        # Meldung vor dem Verarbeiten der Log-Dateien anzeigen
-        Clear-Host
-        Write-Host $selectedLangConfig.lang_processingLogsMessage -ForegroundColor Yellow
-        Write-Host $selectedLangConfig.lang_pleaseWaitMessage -ForegroundColor Yellow
+        # Filtert die Log-Dateien und gibt das Ergebnis aus
+        filter-logFiles -outputFolder $outputFolder -processedFolder $processedFolder
+        # Ausgabe der Abschlussmeldung
+        Write-Host "" -ForegroundColor White
+        Write-Host $selectedLangConfig.lang_scriptFinishedMessage -ForegroundColor Red
         Write-Host ""
-
-        # Filtervorgang für jede Logdatei durchführen
-        foreach ($sourceFile in $sourceFiles) {
-            # Pfad zur Log-Datei setzen
-            $sourceFilePath = $sourceFile.FullName
-
-            # Setze den Namen der Log-Datei und des Ausgabeverzeichnisses
-            $sourceFileName = [System.IO.Path]::GetFileNameWithoutExtension($sourceFile.Name)
-
-            # Setze den Filterzeitstempel neu
-            $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-            $outputDirectory = New-Item -ItemType Directory -Path "$outputFolder\$sourceFileName`_-_gefiltert_am_$timestamp" -Force
-
-            # Initialisiere Zähler
-            $counter = @{
-                "ERROR" = 0
-                "WARN" = 0
-                "update" = 0
-                "not found" = 0
-                "left the game" = 0
-                "joined the game" = 0
-                "version" = 0
-                "logged in with" = 0
-            }
-
-            # Durchführen des Filtervorgangs und Zählen der gefundenen Schlagwörter
-            Get-Content $sourceFilePath | ForEach-Object -Begin {
-                $lineNumber = 0
-            } -Process {
-                $lineNumber++
-                $line = "$lineNumber`:`t$_"
-                foreach ($keyword in $config.keywords) {
-                    if ($_ -match $keyword) {
-                        $counter[$keyword]++
-                        $line | Out-File -Append "$outputDirectory\$keyword.log" -Encoding utf8
-                    }
-                }
-            }
-
-            # Ausgabe der verarbeiteten Dateinamen und der Anzahl der gefundenen Schlagwörter
-            Write-Host "$($selectedLangConfig.lang_processingFinishAMessage) '$($sourceFile.Name)' $($selectedLangConfig.lang_processingFinishBMessage)" -ForegroundColor Green
-            Write-Host "    $($selectedLangConfig.lang_processingFinishFolderInfoMessage):" -ForegroundColor White
-            Write-Host "     - $($processedFolder)\$($sourceFileName)" -ForegroundColor Cyan
-
-            Write-Host "    $($selectedLangConfig.lang_processingFinishFoundMessage):" -ForegroundColor White
-            foreach ($key in $counter.Keys) {
-                Write-Host "     - `"$key`": $($counter[$key])x;" -ForegroundColor Yellow
-            }
-            Write-Host ""
-
-            # Verschieben der verarbeiteten Datei in den Zielordner mit Prüfung auf vorhandene Dateinamen
-            $destination = "$processedFolder\$($sourceFile.Name)"
-            $counterSuffix = 1
-            while (Test-Path $destination) {
-                $destination = "$processedFolder\$($sourceFileName)_$counterSuffix$($sourceFile.Extension)"
-                $counterSuffix++
-            }
-            Move-Item -Path $sourceFilePath -Destination $destination -Force
-        }
+        Write-Host ""
+        Write-Host ""
+        CheckIfUpdateIsAvailable -firstStart $firstStartInput -currentVersion $currentVersion -repoOwner $repoOwner -repoName $repoName
+        [void][System.Console]::ReadKey() # Warten auf Tastendruck
+        # Suche nach Update
+        & $MyInvocation.MyCommand.Path # Skript erneut starten
+        EXIT
     }
 }
-
-# Ausgabe der Abschlussmeldung
-Write-Host "" -ForegroundColor White
-Write-Host $selectedLangConfig.lang_scriptFinishedMessage -ForegroundColor Red
-[void][System.Console]::ReadKey() # Warten auf Tastendruck
-& $MyInvocation.MyCommand.Path # Skript erneut starten
-
-
-
-#>
+EXIT
