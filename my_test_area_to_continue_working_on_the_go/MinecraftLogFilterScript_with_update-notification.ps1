@@ -404,6 +404,75 @@ lang_scriptFinishedMessage: "You can now close the console window or restart it 
     $defaultLangENConfig | Out-File -FilePath $FilePath -Encoding utf8
 }
 
+function Write-YamlConfigToFile {
+    param (
+        [string]$FilePath
+    )
+
+    # Konfigurationsdatei mit ausgewählter Sprache erstellen
+    $defaultConfig = @"
+# Never edit the version number!
+# Die Versionsnummer niemals bearbeiten!
+configVersion: "$configFileVersion"
+
+# Changes the language output in the script.
+# default: "en"
+# Stellt die Sprachausgabe im Skript um.
+# Standard: "de"
+lang: "$selectedLang"
+
+# Folder name of the folder containing the files to be filtered.
+# default: "to_filter"
+# Ordnername des Ordners, welcher die zu filternden Dateien enthält.
+#Standart: sourceFolder: "zu_filtern"
+sourceFolder: "zu_filtern"
+
+# Destination folder for the filtered files.
+# default: "filtered"
+# Zielordner für die gefilterten Dateien.
+#Standart: "gefiltert"
+outputFolder: "gefiltert"
+
+# Folder for the files that have already been processed.
+# default: "processed"
+# Ordner für die bereits verarbeiteten Dateien.
+# Standart: "verarbeitet"
+processedFolder: "verarbeitet"
+
+# Keywords that are used for filtering.
+# Important! Special characters such as : ; [ ] { } " ' must not be included in the filter term!
+# default: ERROR, WARN, not found, update, version, joined the game, logged in with, left the game
+# Schlagwörter, nach denen gefiltert wird.
+# Wichtig! Sonderzeichen wie : ; [ ] { } " ' dürfen nicht im Filterbegriff enthalten sein!
+# Standart sind: ERROR, WARN, not found, update, version, joined the game, logged in with, left the game, issued server command:
+keywords:
+    - WARN
+    - update
+    - ERROR
+    - not found
+    - left the game
+    - joined the game
+    - version
+    - logged in with
+    - issued server command
+"@
+    $defaultConfig | Out-File -FilePath $FilePath -Encoding utf8
+
+    # Laden der ausgewählten Sprachkonfiguration basierend auf der Sprache in der config.yml
+    $config = Get-Content $configFile | ConvertFrom-Yaml
+    $lang = $config.lang
+    $selectedLangConfig = if ($lang -eq "de") { $langDEConfig } elseif  ($lang -eq "en") { $langENConfig } else {$langENConfig}
+
+        # Ausgabe der Meldung im Konsolenfenster
+        Clear-Host
+        Write-Host "$($selectedLangConfig.lang_configCreatedMessage -f $configFile)" -ForegroundColor Yellow
+        Write-Host $selectedLangConfig.lang_configEditMessage -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
+        [void][System.Console]::ReadKey() # Warten auf Tastendruck
+        Clear-Host
+}
+
 function UpdateLangFilesIfOutDate {
     param (
         [string]$configFolder,
@@ -461,6 +530,35 @@ function UpdateLangFilesIfOutDate {
     }
 }
 
+function set-Language {
+    param (
+        [string[]]$availableLanguages
+    )
+
+    $selectedLang = $null
+    do {
+        Clear-Host
+        Write-Host "[DE] Bitte wählen Sie Ihre Sprache:" -ForegroundColor Yellow
+        Write-Host "[EN] Please select your language:" -ForegroundColor Yellow
+        Write-Host ""
+        for ($i=0; $i -lt $availableLanguages.Count; $i++) {
+            Write-Host "$i. $($availableLanguages[$i])" -ForegroundColor Cyan
+        }
+        Write-Host ""
+        Write-Host "[DE] Geben Sie die entsprechende Nummer ein und bestätigen Sie diese mit Enter."
+        Write-Host "[EN] Type in the corresponding number and confirm with Enter."
+        $userInput = Read-Host
+        if ($userInput -ge 0 -and $userInput -lt $availableLanguages.Count) {
+            $selectedLang = $availableLanguages[$userInput]
+        } else {
+            Write-Host "[DE] Ungültige Auswahl." -ForegroundColor Red
+            Write-Host "[EN] Invalid selection." -ForegroundColor Red
+            Start-Sleep -Seconds 1
+        }
+    } while ($null -eq $selectedLang)
+    return $selectedLang
+}
+
 
 
 
@@ -500,9 +598,10 @@ if (-not (Get-Module -Name powershell-yaml -ListAvailable)) {
 
 # Prüfen, ob $configFolder existiert
 if (-not (Test-Path $configFolder -PathType Container)) {
-    #Prüfe auf Updates bevor das Skript das erste mal ausgeführt wird
     $firstStartInput = $true
+    #Prüfe auf Updates bevor das Skript das erste mal ausgeführt wird
     CheckIfUpdateIsAvailable -firstStart $firstStartInput
+    Start-Sleep -Seconds 3
     # Erstellen des Ordners, falls er nicht existiert
     New-Item -ItemType Directory -Path $configFolder -Force | Out-Null
 } else {
@@ -531,6 +630,20 @@ if ($langDEConfig.langDEConfigVersion -ne $langDEFileVersion -or $langENConfig.l
     $langENConfig = Get-Content $langENFile | ConvertFrom-Yaml
 }
 
+# Create config-file
+if (-not (Test-Path $configFile -PathType Leaf)) {
+    # set Language # Wähle Sprache
+    $selectedLang = set-Language -availableLanguages $availableLanguages
+    Write-YamlConfigToFile -FilePath $configFile
+
+    & $MyInvocation.MyCommand.Path # Skript erneut starten
+    EXIT
+}
+
+# Laden der ausgewählten Sprachkonfiguration basierend auf der Sprache in der config.yml
+$config = Get-Content $configFile | ConvertFrom-Yaml
+$lang = $config.lang
+$selectedLangConfig = if ($lang -eq "de") { $langDEConfig } elseif  ($lang -eq "en") { $langENConfig } else {$langENConfig}
 
 
 
@@ -540,26 +653,13 @@ if ($langDEConfig.langDEConfigVersion -ne $langDEFileVersion -or $langENConfig.l
 
 
 PAUSE
+
+
+
 
 EXIT
 
 
-
-
-
-PAUSE
-
-
-
-# Testweise Laden der Sprachen
-$lang = "en"
-$selectedLangConfig = if ($lang -eq "de") { $langDEConfig } else { $langENConfig }
-
-CheckIfUpdateIsAvailable -firstStart $firstStartInput
-
-
-
-PAUSE
 
 
 
@@ -573,96 +673,7 @@ PAUSE
 
 <#
 
-# Nutzer nach Sprachwahl fragen und entsprechende Variable in der Konfigurationsdatei festlegen
-if (-not (Test-Path $configFile -PathType Leaf)) {
-    # Sprachauswahl abfragen und prüfen, ob die Auswahl gültig ist
-    $selectedLang = $null
-    do {
-        Clear-Host
-        Write-Host "Please select your language / Bitte wählen Sie Ihre Sprache:" -ForegroundColor Yellow
-        for ($i=0; $i -lt $availableLanguages.Count; $i++) {
-            Write-Host "$i. $($availableLanguages[$i])" -ForegroundColor Cyan
-        }
-        Write-Host ""
-        Write-Host "Enter the number / Geben Sie die Nummer ein"
-        $userInput = Read-Host "and confirm the number with Enter.  / und bestätigen Sie die Nummer mit Enter. "
-        if ($userInput -ge 0 -and $userInput -lt $availableLanguages.Count) {
-            $selectedLang = $availableLanguages[$userInput]
-        } else {
-            Write-Host "Invalid selection. / Ungültige Auswahl." -ForegroundColor Red
-            Start-Sleep -Seconds 1
-        }
-    } while (null -eq $$selectedLang)
 
-    # Konfigurationsdatei mit ausgewählter Sprache erstellen
-    $defaultConfig = @"
-# Never edit the version number!
-# Die Versionsnummer niemals bearbeiten!
-configVersion: "$configFileVersion"
-
-# Changes the language output in the script.
-# default: "en"
-# Stellt die Sprachausgabe im Skript um.
-# Standard: "de"
-lang: "$selectedLang"
-
-# Folder name of the folder containing the files to be filtered.
-# default: "to_filter"
-# Ordnername des Ordners, welcher die zu filternden Dateien enthält.
-#Standart: sourceFolder: "zu_filtern"
-sourceFolder: "zu_filtern"
-
-# Destination folder for the filtered files.
-# default: "filtered"
-# Zielordner für die gefilterten Dateien.
-#Standart: "gefiltert"
-outputFolder: "gefiltert"
-
-# Folder for the files that have already been processed.
-# default: "processed"
-# Ordner für die bereits verarbeiteten Dateien.
-# Standart: "verarbeitet"
-processedFolder: "verarbeitet"
-
-# Keywords that are used for filtering.
-# Important! Special characters such as : ; [ ] { } " ' must not be included in the filter term!
-# default: ERROR, WARN, not found, update, version, joined the game, logged in with, left the game
-# Schlagwörter, nach denen gefiltert wird.
-# Wichtig! Sonderzeichen wie : ; [ ] { } " ' dürfen nicht im Filterbegriff enthalten sein!
-# Standart sind: ERROR, WARN, not found, update, version, joined the game, logged in with, left the game, issued server command:
-keywords:
-  - WARN
-  - update
-  - ERROR
-  - not found
-  - left the game
-  - joined the game
-  - version
-  - logged in with
-  - issued server command
-"@
-    $defaultConfig | Out-File -FilePath $configFile -Encoding utf8
-
-# Laden der ausgewählten Sprachkonfiguration basierend auf der Sprache in der config.yml
-$config = Get-Content $configFile | ConvertFrom-Yaml
-$lang = $config.lang
-$selectedLangConfig = if ($lang -eq "de") { $langDEConfig } else { $langENConfig }
-
-    # Ausgabe der Meldung im Konsolenfenster
-    Clear-Host
-    Write-Host "$($selectedLangConfig.lang_configCreatedMessage -f $configFile)" -ForegroundColor Yellow
-    Write-Host $selectedLangConfig.lang_configEditMessage -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
-    [void][System.Console]::ReadKey() # Warten auf Tastendruck
-    Clear-Host
-    & $MyInvocation.MyCommand.Path # Skript erneut starten
-}
-
-# Laden der ausgewählten Sprachkonfiguration basierend auf der Sprache in der config.yml
-$config = Get-Content $configFile | ConvertFrom-Yaml
-$lang = $config.lang
-$selectedLangConfig = if ($lang -eq "de") { $langDEConfig } else { $langENConfig }
 
 
 # Laden der Konfiguration aus der Datei
