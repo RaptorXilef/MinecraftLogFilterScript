@@ -286,8 +286,6 @@ function CheckIfUpdateIsAvailable {
         # Aufruf der Funktion CheckForUpdate
         Test-UpdateAvailableWithConfig $currentVersion $lastVersion $repoOwner $repoName
     }
-
-
 }
 
 function Write-YamlDEToFile {
