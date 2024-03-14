@@ -24,6 +24,7 @@ Lizenz: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
 # ToDo     Updatefunktion am Ende des Skripts ausführen, nach der Ausgabe der gefilterten Daten ✔
 # Todo 4. Funktion einbauen, in Config die Updates zu deaktivieren/aktivieren. 
 
+
 # >>>>Funktionen<<<<
 function CheckIfUpdateIsAvailable {
     param (
@@ -407,10 +408,16 @@ sourceFolder: "zu_filtern"
 outputFolder: "gefiltert"
 
 # Folder for the files that have already been processed.
-# default: "processed"
+# default: "processedLog"
 # Ordner für die bereits verarbeiteten Dateien.
-# Standart: "verarbeitet"
-processedFolder: "verarbeitet"
+# Standart: "verarbeitetLog"
+processedFolder: "verarbeitetLog"
+
+# Folder for the gz-archiv-files that have already been processed.
+# default: "processedGz"
+# Ordner für die bereits verarbeiteten gz-Archiv-Dateien.
+# Standart: "verarbeitetGz"
+processedFolderGz: "verarbeitetGz"
 
 # Keywords that are used for filtering.
 # Important! Special characters such as : ; [ ] { } " ' must not be included in the filter term!
@@ -543,12 +550,14 @@ function create-WorkFolders {
     New-Item -ItemType Directory -Path $sourceFolder -Force | Out-Null
     New-Item -ItemType Directory -Path $outputFolder -Force | Out-Null
     New-Item -ItemType Directory -Path $processedFolder -Force | Out-Null
+    New-Item -ItemType Directory -Path $processedFolderGz -Force | Out-Null
 
     # Ausgabe der Meldung im Konsolenfenster
     Clear-Host
     Write-Host ($selectedLangConfig.lang_foldersCreatedMessage -f $sourceFolder) -ForegroundColor White
     Write-Host " - $sourceFolder" -ForegroundColor Green  # Diese Zeile hinzufügen
     Write-Host " - $processedFolder" -ForegroundColor Green
+    Write-Host " - $processedFolderGz" -ForegroundColor Green
     Write-Host " - $outputFolder" -ForegroundColor Green
     Write-Host ""
     Write-Host "$($selectedLangConfig.lang_filesAddedMessage -f $sourceFolder)" -ForegroundColor White
@@ -575,6 +584,97 @@ function missing-logFiles {
     Clear-Host
 }
 
+function filter-logFilesGz {
+    param (
+        [string]$outputFolder,
+        [string]$processedFolderGz
+    )
+
+    # Prüfen, ob $outputFolder existiert
+    if (-not (Test-Path $outputFolder -PathType Container)) {
+        # Erstellen des Ordners, falls er nicht existiert
+        New-Item -ItemType Directory -Path $outputFolder -Force | Out-Null
+    }
+
+    # Prüfen, ob $processedFolderGz existiert
+    if (-not (Test-Path $processedFolderGz -PathType Container)) {
+        # Erstellen des Ordners, falls er nicht existiert
+        New-Item -ItemType Directory -Path $processedFolderGz -Force | Out-Null
+    }
+
+    # Meldung vor dem Verarbeiten der Log-Dateien anzeigen
+    Clear-Host
+    Write-Host $selectedLangConfig.lang_processingLogsMessage -ForegroundColor Yellow
+    Write-Host $selectedLangConfig.lang_pleaseWaitMessage -ForegroundColor Yellow
+    Write-Host ""
+
+
+
+
+
+    # Liste alle .gz-Dateien im Quellordner auf
+    $gzFiles = Get-ChildItem -Path $sourceFolder -Filter "*.gz"
+
+    # Überprüfe, ob mindestens eine .gz-Datei vorhanden ist
+    if ($gzFiles.Count -gt 0) {
+        Write-Output "Es sind $($gzFiles.Count) .gz-Dateien im Ordner vorhanden."
+
+            # Liste alle .gz-Dateien im Quellordner auf
+            $gzFiles = Get-ChildItem -Path $sourceFolder -Filter "*.gz"
+
+            # Extrahiere und verschiebe jede .gz-Datei
+            foreach ($gzFile in $gzFiles) {
+                # Bestimme den Dateinamen ohne Erweiterung
+                $outputFileName = [System.IO.Path]::GetFileNameWithoutExtension($gzFile.Name)
+
+                # Definiere den vollständigen Pfad zur Ausgabedatei
+                $outputFilePath = Join-Path -Path $sourceFolder -ChildPath $outputFileName
+
+                # Erstelle ein FileStream-Objekt für die .gz-Datei
+                $fileStream = [System.IO.File]::OpenRead($gzFile.FullName) # ToDo - Optional: Wenn schon vorhanden, Zahl an Namen anhängen
+
+                # Erstelle ein GZipStream-Objekt für die Dekomprimierung
+                $gzipStream = [System.IO.Compression.GZipStream]::new($fileStream, [System.IO.Compression.CompressionMode]::Decompress)
+
+
+
+                # Definiere den vollständigen Pfad zur Ausgabedatei
+                $outputFileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($outputFileName)
+                $extension = [System.IO.Path]::GetExtension($outputFileName)
+                $counter = 1
+                while (Test-Path (Join-Path -Path $sourceFolder -ChildPath "$outputFileNameWithoutExtension`_$counter$extension")) {
+                    $counter++
+                }
+                $outputFilePath = Join-Path -Path $sourceFolder -ChildPath "$outputFileNameWithoutExtension`_$counter$extension"
+                $outputFileStream = [System.IO.File]::Create($outputFilePath)
+
+                
+
+                # Kopiere den Inhalt der GZip-Datei in die Ausgabedatei
+                $gzipStream.CopyTo($outputFileStream)
+
+                # Schließe die Streams
+                $fileStream.Close()
+                $outputFileStream.Close()
+                $gzipStream.Close()
+
+                # Move-Item -Path $gzFile.FullName -Destination (Join-Path -Path $processedFolderGz -ChildPath $gzFile.Name) # ToDo Wenn schon vorhanden Zahl an Namen anhängen
+                # Verschiebe die .gz-Datei in den processedFolderGz
+                $destinationFileName = $gzFile.Name
+                $counter = 1
+                while (Test-Path (Join-Path -Path $processedFolderGz -ChildPath $destinationFileName)) {
+                    $outputFileName = $outputFileName -replace '\.gz$', ''
+                    $destinationFileName = "{0}_{1}.gz" -f $outputFileName, $counter
+                    $counter++
+                }
+                Move-Item -Path $gzFile.FullName -Destination (Join-Path -Path $processedFolderGz -ChildPath $destinationFileName)
+                Start-Sleep -Seconds 2
+            }
+
+    } else {
+        Write-Output "Es sind keine .gz-Dateien im Ordner vorhanden."
+    }
+}
 
 function filter-logFiles {
     param (
@@ -600,63 +700,66 @@ function filter-logFiles {
     Write-Host $selectedLangConfig.lang_pleaseWaitMessage -ForegroundColor Yellow
     Write-Host ""
 
+    
     # Filtervorgang für jede Logdatei durchführen
     foreach ($sourceFile in $sourceFiles) {
-        # Pfad zur Log-Datei setzen
-        $sourceFilePath = $sourceFile.FullName
+        if ($sourceFile.Extension -eq ".log") {
+            # Pfad zur Log-Datei setzen
+            $sourceFilePath = $sourceFile.FullName
 
-        # Setze den Namen der Log-Datei und des Ausgabeverzeichnisses
-        $sourceFileName = [System.IO.Path]::GetFileNameWithoutExtension($sourceFile.Name)
+            # Setze den Namen der Log-Datei und des Ausgabeverzeichnisses
+            $sourceFileName = [System.IO.Path]::GetFileNameWithoutExtension($sourceFile.Name)
 
-        # Setze den Filterzeitstempel neu
-        $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-        $outputDirectory = New-Item -ItemType Directory -Path "$outputFolder\$sourceFileName`_-_gefiltert_am_$timestamp" -Force
+            # Setze den Filterzeitstempel neu
+            $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+            $outputDirectory = New-Item -ItemType Directory -Path "$outputFolder\$sourceFileName`_-_gefiltert_am_$timestamp" -Force
 
-        # Initialisiere Zähler
-        $counter = @{
-            "ERROR" = 0
-            "WARN" = 0
-            "update" = 0
-            "not found" = 0
-            "left the game" = 0
-            "joined the game" = 0
-            "version" = 0
-            "logged in with" = 0
-        }
+            # Initialisiere Zähler
+            $counter = @{
+                "ERROR" = 0
+                "WARN" = 0
+                "update" = 0
+                "not found" = 0
+                "left the game" = 0
+                "joined the game" = 0
+                "version" = 0
+                "logged in with" = 0
+            }
 
-        # Durchführen des Filtervorgangs und Zählen der gefundenen Schlagwörter
-        Get-Content $sourceFilePath | ForEach-Object -Begin {
-            $lineNumber = 0
-        } -Process {
-            $lineNumber++
-            $line = "$lineNumber`:`t$_"
-            foreach ($keyword in $config.keywords) {
-                if ($_ -match $keyword) {
-                    $counter[$keyword]++
-                    $line | Out-File -Append "$outputDirectory\$keyword.log" -Encoding utf8
+            # Durchführen des Filtervorgangs und Zählen der gefundenen Schlagwörter
+            Get-Content $sourceFilePath | ForEach-Object -Begin {
+                $lineNumber = 0
+            } -Process {
+                $lineNumber++
+                $line = "$lineNumber`:`t$_"
+                foreach ($keyword in $config.keywords) {
+                    if ($_ -match $keyword) {
+                        $counter[$keyword]++
+                        $line | Out-File -Append "$outputDirectory\$keyword.log" -Encoding utf8
+                    }
                 }
             }
-        }
 
-        # Ausgabe der verarbeiteten Dateinamen und der Anzahl der gefundenen Schlagwörter
-        Write-Host "$($selectedLangConfig.lang_processingFinishAMessage) '$($sourceFile.Name)' $($selectedLangConfig.lang_processingFinishBMessage)" -ForegroundColor Green
-        Write-Host "    $($selectedLangConfig.lang_processingFinishFolderInfoMessage):" -ForegroundColor White
-        Write-Host "     - $($processedFolder)\$($sourceFileName)" -ForegroundColor Cyan
+            # Ausgabe der verarbeiteten Dateinamen und der Anzahl der gefundenen Schlagwörter
+            Write-Host "$($selectedLangConfig.lang_processingFinishAMessage) '$($sourceFile.Name)' $($selectedLangConfig.lang_processingFinishBMessage)" -ForegroundColor Green
+            Write-Host "    $($selectedLangConfig.lang_processingFinishFolderInfoMessage):" -ForegroundColor White
+            Write-Host "     - $($processedFolder)\$($sourceFileName)" -ForegroundColor Cyan
 
-        Write-Host "    $($selectedLangConfig.lang_processingFinishFoundMessage):" -ForegroundColor White
-        foreach ($key in $counter.Keys) {
-            Write-Host "     - `"$key`": $($counter[$key])x;" -ForegroundColor Yellow
-        }
-        Write-Host ""
+            Write-Host "    $($selectedLangConfig.lang_processingFinishFoundMessage):" -ForegroundColor White
+            foreach ($key in $counter.Keys) {
+                Write-Host "     - `"$key`": $($counter[$key])x;" -ForegroundColor Yellow
+            }
+            Write-Host ""
 
-        # Verschieben der verarbeiteten Datei in den Zielordner mit Prüfung auf vorhandene Dateinamen
-        $destination = "$processedFolder\$($sourceFile.Name)"
-        $counterSuffix = 1
-        while (Test-Path $destination) {
-            $destination = "$processedFolder\$($sourceFileName)_$counterSuffix$($sourceFile.Extension)"
-            $counterSuffix++
-        }
-        Move-Item -Path $sourceFilePath -Destination $destination -Force
+            # Verschieben der verarbeiteten Datei in den Zielordner mit Prüfung auf vorhandene Dateinamen
+            $destination = "$processedFolder\$($sourceFile.Name)"
+            $counterSuffix = 1
+            while (Test-Path $destination) {
+                $destination = "$processedFolder\$($sourceFileName)_$counterSuffix$($sourceFile.Extension)"
+                $counterSuffix++
+            }
+            Move-Item -Path $sourceFilePath -Destination $destination -Force
+        } 
     }
 
 }
@@ -684,7 +787,7 @@ function filter-logFiles {
     $repoName = "MinecraftLogFilterScript"
 
     # Versionsvariablen für die Konfigurationsdatei und die Sprachkonfigurationsdateien
-    $configFileVersion = "1"
+    $configFileVersion = "2"
     $langDEFileVersion = "2"
     $langENFileVersion = "2"
 
@@ -697,11 +800,18 @@ if (-not (Get-Module -Name powershell-yaml -ListAvailable)) {
     Write-Host "[DE] Das Modul 'powershell-yaml' wird benötigt um die config.yml zu lesen, welche die Filtereinstellungen enthält. Es wird jetzt installiert..." -ForegroundColor Yellow
     Write-Host "[EN] The module 'powershell-yaml' is needed to read the config.yml, which contains the filter settings. It will now be installed..." -ForegroundColor Yellow
     Install-Module -Name powershell-yaml -Scope CurrentUser -Force
-    Import-Module -Name powershell-yaml
-} else {
-    # Importieren des Moduls powershell-yaml
-    Import-Module -Name powershell-yaml
 }
+# Importieren des Moduls powershell-yaml
+Import-Module -Name powershell-yaml
+
+
+if (-not (Get-Module -Name Microsoft.PowerShell.Archive -ListAvailable)) {
+    Write-Host "[DE] Das Modul 'Microsoft.PowerShell.Archive' wird benötigt um die LOG.gz Dateien zu lesen. Es wird jetzt installiert..." -ForegroundColor Yellow
+    Write-Host "[EN] The module 'Microsoft.PowerShell.Archive' is required to read the LOG.gz files. It will now be installed..." -ForegroundColor Yellow
+    Install-Module -Name Microsoft.PowerShell.Archive -Scope CurrentUser -Force
+}
+# Importieren des System.IO.Compression-Moduls für die Arbeit mit komprimierten Dateien
+Import-Module -Name Microsoft.PowerShell.Archive
 
 # Prüfen, ob $configFolder existiert
 if (-not (Test-Path $configFolder -PathType Container)) {
@@ -760,6 +870,7 @@ $selectedLangConfig = if ($lang -eq "de") { $langDEConfig } elseif  ($lang -eq "
 $sourceFolder = $configFolder + $config.sourceFolder
 $outputFolder = $configFolder + $config.outputFolder
 $processedFolder = $configFolder + $config.processedFolder
+$processedFolderGz = $configFolder + $config.processedFolderGz
 
 # Prüfen, ob $sourceFolder existiert
 if (-not (Test-Path $sourceFolder -PathType Container)) {
@@ -769,14 +880,26 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
 } else {
     # Erfassen aller Dateien im $sourceFolder
     $sourceFiles = Get-ChildItem -Path $sourceFolder -File
-    # Filtern der Dateien, um nur diejenigen mit der Endung ".log" beizubehalten
-    $sourceFiles = $sourceFiles | Where-Object { $_.Extension -eq ".log" }
+    # Filtern der Dateien, um nur diejenigen mit der Endung ".log" und ".gz" beizubehalten
+    $sourceFiles = $sourceFiles | Where-Object { $_.Extension -eq ".log" -or $_.Extension -eq ".gz" }
     if ($sourceFiles.Count -eq 0) {
         missing-logFiles -sourceFolder $sourceFolder
         & $MyInvocation.MyCommand.Path # Skript erneut starten
         EXIT
     } else {
+        # Erfassen aller GZ-Dateien im $sourceFolder
+        $sourceFiles = Get-ChildItem -Path $sourceFolder -File
+        # Filtern der Dateien, um nur diejenigen mit der Endung ".log" und ".gz" beizubehalten
+        $sourceFiles = $sourceFiles | Where-Object { $_.Extension -eq ".gz" }
+        
         # Filtert die Log-Dateien und gibt das Ergebnis aus
+        filter-logFilesGz -outputFolder $outputFolder -processedFolderGz $processedFolderGz
+
+        # Erfassen aller Log-Dateien im $sourceFolder
+        $sourceFiles = Get-ChildItem -Path $sourceFolder -File
+        # Filtern der Dateien, um nur diejenigen mit der Endung ".log" und ".gz" beizubehalten
+        $sourceFiles = $sourceFiles | Where-Object { $_.Extension -eq ".log" }
+
         filter-logFiles -outputFolder $outputFolder -processedFolder $processedFolder
         # Ausgabe der Abschlussmeldung
         Write-Host "" -ForegroundColor White
@@ -792,3 +915,24 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
     }
 }
 EXIT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
