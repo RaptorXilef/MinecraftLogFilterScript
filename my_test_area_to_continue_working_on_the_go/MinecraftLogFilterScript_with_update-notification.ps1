@@ -395,6 +395,12 @@ configVersion: "$configFileVersion"
 # Standard: "de"
 lang: "$selectedLang"
 
+# Aktiviert oder deaktiviert die Suche nach Updates.
+# default: "true"   -> to activate the update search. "false" to deactivate.
+# Activates or deactivates the search for updates.
+#Standart: "true"   -> zum aktivieren der Updatesuche. "false" zum deaktivieren.
+searchForUpdates: "true"
+
 # Folder name of the folder containing the files to be filtered.
 # default: "to_filter"
 # Ordnername des Ordners, welcher die zu filternden Dateien enthält.
@@ -648,7 +654,7 @@ function filter-logFilesGz {
                 $outputFilePath = Join-Path -Path $sourceFolder -ChildPath "$outputFileNameWithoutExtension`_$counter$extension"
                 $outputFileStream = [System.IO.File]::Create($outputFilePath)
 
-                
+
 
                 # Kopiere den Inhalt der GZip-Datei in die Ausgabedatei
                 $gzipStream.CopyTo($outputFileStream)
@@ -907,7 +913,9 @@ if (-not (Test-Path $sourceFolder -PathType Container)) {
         Write-Host ""
         Write-Host ""
         Write-Host ""
-        CheckIfUpdateIsAvailable -firstStart $firstStartInput -currentVersion $currentVersion -repoOwner $repoOwner -repoName $repoName
+        if ($config.searchForUpdates -eq "true") {
+            CheckIfUpdateIsAvailable -firstStart $firstStartInput -currentVersion $currentVersion -repoOwner $repoOwner -repoName $repoName
+        }
         [void][System.Console]::ReadKey() # Warten auf Tastendruck
         # Suche nach Update
         & $MyInvocation.MyCommand.Path # Skript erneut starten

@@ -18,14 +18,14 @@ $configFolder = "MinecraftLogFilter"
 # Uninstall YAML-Support
 if (Get-Module -Name powershell-yaml -ListAvailable) {
     if (Confirm-Action "Möchten Sie das Modul 'powershell-yaml', dass zum Auslesen von yml Dateien benötigt wurde wieder deinstallieren? / Do you want to uninstall the module 'powershell-yaml' that was needed to read yml files?") {
-        Uninstall-Module -Name powershell-yaml -Scope CurrentUser
+        Uninstall-Module -Name powershell-yaml -Force
     }
 }
 
 # Uninstall GZ-Support
 if (Get-Module -Name Microsoft.PowerShell.Archive -ListAvailable) {
     if (Confirm-Action "Möchten Sie das Modul 'Microsoft.PowerShell.Archive', dass zum Entpacken von gz-Archiv-Dateien benötigt wurde wieder deinstallieren? / Would you like to uninstall the module 'Microsoft.PowerShell.Archive', which was required for unpacking gz archive files?") {
-        Uninstall-Module -Name Microsoft.PowerShell.Archive -Scope CurrentUser
+        Uninstall-Module -Name Microsoft.PowerShell.Archive -Force
     }
 }
 
