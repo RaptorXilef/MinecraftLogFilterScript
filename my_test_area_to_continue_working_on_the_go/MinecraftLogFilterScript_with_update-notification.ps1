@@ -18,12 +18,6 @@ Autor: RaptorXilef
 GitHub: https://github.com/raptorxilef/MinecraftLogFilterScript
 Lizenz: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
 #>
-# ToDo 1. Mit "Visual Studio Code" gefundene Fehler beseitigen ✔
-# ToDo 2. Code nach konvention strukturieren und in Formeln aufgliedern
-# ToDo 3. Nach update suchen, bevor eine config.yml existiert, wenn existiert erst: ✔
-# ToDo     Updatefunktion am Ende des Skripts ausführen, nach der Ausgabe der gefilterten Daten ✔
-# Todo 4. Funktion einbauen, in Config die Updates zu deaktivieren/aktivieren. ✔
-
 
 # >>>>Funktionen<<<<
 function CheckIfUpdateIsAvailable {
@@ -805,7 +799,7 @@ function filter-logFiles {
 if (-not (Get-Module -Name powershell-yaml -ListAvailable)) {
     Write-Host "[DE] Das Modul 'powershell-yaml' wird benötigt um die config.yml zu lesen, welche die Filtereinstellungen enthält. Es wird jetzt installiert..." -ForegroundColor Yellow
     Write-Host "[EN] The module 'powershell-yaml' is needed to read the config.yml, which contains the filter settings. It will now be installed..." -ForegroundColor Yellow
-    Install-Module -Name powershell-yaml -Scope CurrentUser -Force
+    Install-Module -Name powershell-yaml -Force
 }
 # Importieren des Moduls powershell-yaml
 Import-Module -Name powershell-yaml
@@ -814,7 +808,7 @@ Import-Module -Name powershell-yaml
 if (-not (Get-Module -Name Microsoft.PowerShell.Archive -ListAvailable)) {
     Write-Host "[DE] Das Modul 'Microsoft.PowerShell.Archive' wird benötigt um die LOG.gz Dateien zu lesen. Es wird jetzt installiert..." -ForegroundColor Yellow
     Write-Host "[EN] The module 'Microsoft.PowerShell.Archive' is required to read the LOG.gz files. It will now be installed..." -ForegroundColor Yellow
-    Install-Module -Name Microsoft.PowerShell.Archive -Scope CurrentUser -Force
+    Install-Module -Name Microsoft.PowerShell.Archive -Force
 }
 # Importieren des System.IO.Compression-Moduls für die Arbeit mit komprimierten Dateien
 Import-Module -Name Microsoft.PowerShell.Archive
