@@ -22,7 +22,7 @@ Lizenz: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
 # ToDo 2. Code nach konvention strukturieren und in Formeln aufgliedern
 # ToDo 3. Nach update suchen, bevor eine config.yml existiert, wenn existiert erst: ✔
 # ToDo     Updatefunktion am Ende des Skripts ausführen, nach der Ausgabe der gefilterten Daten ✔
-# Todo 4. Funktion einbauen, in Config die Updates zu deaktivieren/aktivieren. 
+# Todo 4. Funktion einbauen, in Config die Updates zu deaktivieren/aktivieren. ✔
 
 
 # >>>>Funktionen<<<<
