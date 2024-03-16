@@ -788,7 +788,7 @@ function filter-logFiles {
     $langENFile = $configFolder + "lang-en.yml"
 
     # Aktuelle Versionsnummer und Repository-Daten von GitHub zum Abrufen der Versionsnummer aus der GitHub-API # Current version number and repository data from GitHub to retrieve the version number from the GitHub API
-    $currentVersion = "0.0.2-alpha" # <----------- VERSION
+    $currentVersion = "0.0.2-beta" # <----------- VERSION
     $repoOwner = "RaptorXilef"
     $repoName = "MinecraftLogFilterScript"
 
