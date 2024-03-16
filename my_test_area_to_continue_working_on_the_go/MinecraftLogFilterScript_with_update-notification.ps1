@@ -19,8 +19,8 @@ GitHub: https://github.com/raptorxilef/MinecraftLogFilterScript
 Lizenz: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
 #>
 
-# >>>>Funktionen<<<<
-function CheckIfUpdateIsAvailable {
+# >>>>Funktionen<<<< # >>>>Functions<<<<
+function Test-ForUpdateAvailability {
     param (
         [string]$currentVersion,
         [string]$repoOwner,
@@ -28,9 +28,9 @@ function CheckIfUpdateIsAvailable {
         [bool] $firstStart
     )
 
-    # Definition der Funktion Get-LatestVersionFromGitHub zum abrufen der Versionsnummer aus tag_name von GitHub # Definition of the Get-LatestVersionFromGitHub function to retrieve the version number from tag_name from GitHub
-    function Get-LatestVersionFromGitHub_FirstStart($releaseUrlApi) {
-        # Variablen
+    # Definition der Funktion Get-LatestGitHubVersion zum abrufen der Versionsnummer aus tag_name von GitHub # Definition of the Get-LatestGitHubVersion function to retrieve the version number from tag_name from GitHub
+    function Get-LatestGitHubVersionOnFirstStart($releaseUrlApi) {
+        # Variablen # Variables
         # $releaseUrlApi = "https://api.github.com/repos/$repoOwner/$repoName/releases" # <-------- Use this if you also want to check for pre-releases
         $releaseUrlApi = "https://api.github.com/repos/$repoOwner/$repoName/releases/latest"
         try {
@@ -47,9 +47,9 @@ function CheckIfUpdateIsAvailable {
         }
     }
 
-    # Definition der Funktion Get-LatestVersionFromGitHub zum abrufen der Versionsnummer aus tag_name von GitHub # Definition of the Get-LatestVersionFromGitHub function to retrieve the version number from tag_name from GitHub
-    function Get-LatestVersionFromGitHub($releaseUrlApi) {
-        # Variablen
+    # Definition der Funktion Get-LatestGitHubVersion zum abrufen der Versionsnummer aus tag_name von GitHub # Definition of the Get-LatestGitHubVersion function to retrieve the version number from tag_name from GitHub
+    function Get-LatestGitHubVersion($releaseUrlApi) {
+        # Variablen # Variables
         # $releaseUrlApi = "https://api.github.com/repos/$repoOwner/$repoName/releases" # <-------- Use this if you also want to check for pre-releases
         $releaseUrlApi = "https://api.github.com/repos/$repoOwner/$repoName/releases/latest"
         try {
@@ -65,7 +65,7 @@ function CheckIfUpdateIsAvailable {
     }
 
     # Funktion zur Trennung von Versionsnummer und Suffix # Function for separating version number and suffix
-    function Split-Version {
+    function Split-VersionAndSuffix {
         param (
             [string]$version
         )
@@ -80,18 +80,18 @@ function CheckIfUpdateIsAvailable {
     }
 
     # Funktion zur Entfernung eines vorstehenden "v" # Function for removing a protruding "v"
-    function Remove-vFromVersion {
+    function Remove-VPrefix {
         param (
             [string]$version
         )
 
         if ($version) {
-#            Write-Host "String mit 'v': $version"
+            # Write-Host "String mit 'v': $version" # ? Zur Fehleranalyse
             # Überprüfen, ob der String mit "v" beginnt # Check whether the string begins with "v"
             if ($version.StartsWith("v")) {
                 # Entfernen des "v" vom Anfang des Strings # Remove the "v" from the beginning of the string
                 $version = $version.Substring(1)
-#                Write-Host "String ohne 'v': $version"
+                # Write-Host "String ohne 'v': $version" # ? Zur Fehleranalyse
             }
 
             # Rückgabe der Ergebnisse # Return of the results
@@ -100,7 +100,7 @@ function CheckIfUpdateIsAvailable {
     }
 
     # Funktion zur Konvertierung ins System.Version Format # Function for converting to System.version format
-    function ConvertTo-SystemVersion {
+    function Convert-ToSystemVersion {
         param (
             [string]$version
         )
@@ -115,7 +115,7 @@ function CheckIfUpdateIsAvailable {
     }
 
     # Funktion um jeder Pre-Releases-Bezeichnung einen Int-Wert zu zu ordnen # Function to assign an Int value to each pre-release designation
-    function Test-IsVersionsSurfixChange {
+    function Convert-PreReleaseToInt {
         param (
             [string]$versionSurfix
         )
@@ -144,7 +144,7 @@ function CheckIfUpdateIsAvailable {
     }
 
     # Definition der Funktion CheckForUpdate zum Ausgeben, ob ein Update verfügbar ist, oder nicht. # Definition of the CheckForUpdate function to output whether an update is available or not.
-    function Test-UpdateAvailableWithoutConfig($currentVersion, $lastVersion, $repoOwner, $repoName) {
+    function Test-UpdateAvailabilityWithoutExistConfigFile($currentVersion, $lastVersion, $repoOwner, $repoName) {
         $releaseUrl = "https://github.com/$repoOwner/$repoName/releases/latest"
         if ($lastVersion) {
             if (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -eq $lastVersionSurfixValueAsNumber) -or (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -gt $lastVersionSurfixValueAsNumber) -or ($currentVersion -gt $lastVersion))) {
@@ -196,7 +196,7 @@ function CheckIfUpdateIsAvailable {
     }
 
     # Definition der Funktion CheckForUpdate zum Ausgeben, ob ein Update verfügbar ist, oder nicht. # Definition of the CheckForUpdate function to output whether an update is available or not.
-    function Test-UpdateAvailableWithConfig($currentVersion, $lastVersion, $repoOwner, $repoName) {
+    function Test-UpdateAvailabilityWithExistConfigFile($currentVersion, $lastVersion, $repoOwner, $repoName) {
         $releaseUrl = "https://github.com/$repoOwner/$repoName/releases/latest"
         if ($lastVersion) {
             if (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -eq $lastVersionSurfixValueAsNumber) -or (($currentVersion -eq $lastVersion -and $currentVersionSurfixValueAsNumber -gt $lastVersionSurfixValueAsNumber) -or ($currentVersion -gt $lastVersion))) {
@@ -238,52 +238,52 @@ function CheckIfUpdateIsAvailable {
 
 
 
-    # Aufruf der Funktion Get-LatestVersionFromGitHub # Calling the Get-LatestVersionFromGitHub function
+    # Aufruf der Funktion Get-LatestGitHubVersion # Calling the Get-LatestGitHubVersion function
     if ($firstStart -eq $true) {
-        # Aufruf der Funktion CheckForUpdate
-        # Write-Host $firstStart $true
-        $lastVersion = Get-LatestVersionFromGitHub_FirstStart $releaseUrlApi
+        # Aufruf der Funktion Get-LatestGitHubVersionOnFirstStart # Calling the Get-LatestGitHubVersionOnFirstStart function
+        # Write-Host $firstStart $true # ? Zur Fehleranalyse
+        $lastVersion = Get-LatestGitHubVersionOnFirstStart $releaseUrlApi
     } else {
-        # Aufruf der Funktion CheckForUpdate
-        # Write-Host $firstStart $false
-        $lastVersion = Get-LatestVersionFromGitHub $releaseUrlApi
+        # Aufruf der Funktion Get-LatestGitHubVersion # Calling the Get-LatestGitHubVersion function
+        # Write-Host $firstStart $false # ? Zur Fehleranalyse
+        $lastVersion = Get-LatestGitHubVersion $releaseUrlApi
     }
 
     # Trennung von Versionsnummer und Suffix für aktuelle und letzte Version # Separation of version number and suffix for current and last version
-    $currentVersion, $currentVersionSurfix = Split-Version -version $currentVersion
-    $lastVersion, $lastVersionSurfix = Split-Version -version $lastVersion
+    $currentVersion, $currentVersionSurfix = Split-VersionAndSuffix -version $currentVersion
+    $lastVersion, $lastVersionSurfix = Split-VersionAndSuffix -version $lastVersion
 
     # Setzt die Versionsbezeichnung auf stabile wenn diese nicht gesetzt wurde # Sets the version designation to stabile if this has not been set
     if ($currentVersionSurfix) {} else {$currentVersionSurfix = "stabile"}
     if ($lastVersionSurfix) {} else {$lastVersionSurfix = "stabile"}
 
     # Entfernen des "v" vom Anfang des Strings, wenn es existiert # Remove the "v" from the beginning of the string if it exists
-    $currentVersion = Remove-vFromVersion -version $currentVersion
-    $lastVersion = Remove-vFromVersion -version $lastVersion
+    $currentVersion = Remove-VPrefix -version $currentVersion
+    $lastVersion = Remove-VPrefix -version $lastVersion
 
     # Konvertierung von $currentVersion von String in Version # Conversion of $currentVersion from string to version
-    $currentVersion = ConvertTo-SystemVersion -version $currentVersion
-    $lastVersion = ConvertTo-SystemVersion -version $lastVersion
+    $currentVersion = Convert-ToSystemVersion -version $currentVersion
+    $lastVersion = Convert-ToSystemVersion -version $lastVersion
 
     # Test-Ausgabe der aufgetrennten Versionen # Test-output of the split versions
-    # Write-Host "Aktuelle Version: $currentVersion ($currentVersionSurfix)"
-    # Write-Host "Neueste Version: $lastVersion ($lastVersionSurfix)"
+    # Write-Host "Aktuelle Version: $currentVersion ($currentVersionSurfix)" # ? Zur Fehleranalyse
+    # Write-Host "Neueste Version: $lastVersion ($lastVersionSurfix)" # ? Zur Fehleranalyse
 
     # Version-Surfix in nummerischen Wert umwandeln # Convert version surfix to numerical value
-    $currentVersionSurfixValueAsNumber = Test-IsVersionsSurfixChange -versionSurfix $currentVersionSurfix
-    $lastVersionSurfixValueAsNumber = Test-IsVersionsSurfixChange -versionSurfix $lastVersionSurfix
+    $currentVersionSurfixValueAsNumber = Convert-PreReleaseToInt -versionSurfix $currentVersionSurfix
+    $lastVersionSurfixValueAsNumber = Convert-PreReleaseToInt -versionSurfix $lastVersionSurfix
 
-    #if (-not (Test-Path $configFile -PathType Leaf)) {
     if ($firstStart -eq $true) {
-        # Aufruf der Funktion CheckForUpdate
-        Test-UpdateAvailableWithoutConfig $currentVersion $lastVersion $repoOwner $repoName
+        # Aufruf der Funktion Test-UpdateAvailabilityWithoutExistConfigFile # Calling the Test-UpdateAvailabilityWithoutExistConfigFile function
+        Test-UpdateAvailabilityWithoutExistConfigFile $currentVersion $lastVersion $repoOwner $repoName
     } else {
-        # Aufruf der Funktion CheckForUpdate
-        Test-UpdateAvailableWithConfig $currentVersion $lastVersion $repoOwner $repoName
+        # Aufruf der Funktion Test-UpdateAvailabilityWithExistConfigFile # Calling the Test-UpdateAvailabilityWithExistConfigFile function
+        Test-UpdateAvailabilityWithExistConfigFile $currentVersion $lastVersion $repoOwner $repoName
     }
 }
 
-function Write-YamlDEToFile {
+# Erstellt die lang-de.yml mit Inhalt # Creates the lang-de.yml with content
+function New-YamlLangDEFile {
     param (
         [string]$FilePath
     )
@@ -316,6 +316,9 @@ lang_foldersCreatedMessage: "Es wurden Ordner erstellt:"
 lang_filesAddedMessage: "Bitte füge im Ordner {0} die zu filternde/n Log-Dateie/n ein. Fahre anschließend fort."
 lang_restartScriptMessage: "Fahre anschließend fort."
 lang_filesNotFoundMessage: "Bitte füge im Ordner {0} die zu filternde/n Log-Dateie/n ein."
+lang_newLogFilesFromGzArchive_countGzFilePart1: "Es sind "
+lang_newLogFilesFromGzArchive_countGzFilePart2: " .gz-Dateien im Ordner vorhanden."
+lang_newLogFilesFromGzArchive_noGzFilePart: "Es sind keine .gz-Dateien im Ordner vorhanden."
 lang_processingLogsMessage: "Die Log-Dateien werden verarbeitet. Bitte habe einen Moment Geduld."
 lang_pleaseWaitMessage: "Bitte warten..."
 lang_processingFinishAMessage: "Die Verarbeitung von"
@@ -326,7 +329,9 @@ lang_scriptFinishedMessage: "Sie können das Konsolenfenster nun schließen oder
 "@
     $defaultLangDEConfig | Out-File -FilePath $FilePath -Encoding utf8
 }
-function Write-YamlENToFile {
+
+# Erstellt die lang-en.yml mit Inhalt # Creates the lang-en.yml with content
+function New-YamlLangENFile {
     param (
         [string]$FilePath
     )
@@ -359,6 +364,9 @@ lang_foldersCreatedMessage: "Folders have been created:"
 lang_filesAddedMessage: "Please add the log file(s) to be filtered in the folder {0}. Then continue."
 lang_restartScriptMessage: "Then continue."
 lang_filesNotFoundMessage: "Please add the log file/s to be filtered in the folder {0}."
+lang_newLogFilesFromGzArchive_countGzFilePart1: "There are"
+lang_newLogFilesFromGzArchive_countGzFilePart2: ".gz files in the folder."
+lang_newLogFilesFromGzArchive_noGzFilePart: "There are no .gz files in the folder."
 lang_processingLogsMessage: "The log files are being processed. Please be patient for a moment."
 lang_pleaseWaitMessage: "Please wait..."
 processingFinishMessage: "Processing successful!"
@@ -372,12 +380,13 @@ lang_scriptFinishedMessage: "You can now close the console window or restart it 
     $defaultLangENConfig | Out-File -FilePath $FilePath -Encoding utf8
 }
 
-function Write-YamlConfigToFile {
+# Erstellt die config.yml mit Inhalt # Creates the config.yml with content
+function New-YamlConfigFile {
     param (
         [string]$FilePath
     )
 
-    # Konfigurationsdatei mit ausgewählter Sprache erstellen
+    # Konfigurationsdatei mit ausgewählter Sprache erstellen # Create configuration file with selected language
     $defaultConfig = @"
 # Never edit the version number!
 # Die Versionsnummer niemals bearbeiten!
@@ -438,22 +447,23 @@ keywords:
 "@
     $defaultConfig | Out-File -FilePath $FilePath -Encoding utf8
 
-    # Laden der ausgewählten Sprachkonfiguration basierend auf der Sprache in der config.yml
+    # Laden der ausgewählten Sprachkonfiguration basierend auf der Sprache aus der config.yml # Load the selected language configuration based on the language in config.yml
     $config = Get-Content $configFile | ConvertFrom-Yaml
     $lang = $config.lang
     $selectedLangConfig = if ($lang -eq "de") { $langDEConfig } elseif  ($lang -eq "en") { $langENConfig } else {$langENConfig}
 
-        # Ausgabe der Meldung im Konsolenfenster
+        # Ausgabe der Meldung im Konsolenfenster # Output of the message in the console window
         Clear-Host
         Write-Host "$($selectedLangConfig.lang_configCreatedMessage -f $configFile)" -ForegroundColor Yellow
         Write-Host $selectedLangConfig.lang_configEditMessage -ForegroundColor Yellow
         Write-Host ""
         Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
-        [void][System.Console]::ReadKey() # Warten auf Tastendruck
+        [void][System.Console]::ReadKey() # Warten auf Tastendruck # Wait for button to be pressed
         Clear-Host
 }
 
-function UpdateLangFilesIfOutDate {
+# Aktuallisiert die lang-?.yml # Updates the lang-?.yml
+function Update-LanguageFiles {
     param (
         [string]$configFolder,
         [string]$langDEFile,
@@ -463,7 +473,7 @@ function UpdateLangFilesIfOutDate {
     )
 
     if ($langDEConfig.langDEConfigVersion -ne $langDEFileVersion) {
-        # Umbenennen der vorhandenen deutschen Sprachdatei mit einem zählenden Suffix
+        # Umbenennen der vorhandenen deutschen Sprachdatei mit einem zählenden Suffix # Rename the existing German language file with a counting suffix
         $count = 0
         while (Test-Path $langDEFile) {
             $count++
@@ -473,12 +483,12 @@ function UpdateLangFilesIfOutDate {
                 Rename-Item -Path $langDEFile -NewName $newName
                 break
             }
-            Start-Sleep -Milliseconds 100  # Kurze Wartezeit
+            Start-Sleep -Milliseconds 100  # Kurze Wartezeit # Short waiting time
         }
         
         Start-Sleep -Seconds 1
-        # Erstellen einer neuen deutschen Sprachdatei mit den Standardinhalten
-        Write-YamlDEToFile -FilePath $langDEFile
+        # Erstellen einer neuen deutschen Sprachdatei mit den Standardinhalten # Create a new German language file with the standard content
+        New-YamlLangDEFile -FilePath $langDEFile
         Write-Host ""
         Write-Host "[DE] Die Datei: $langDEFile entsprach nicht der benötigten Version und wurde daher neu erstellt." -ForegroundColor Red
         Write-Host "Von der ursprünglichen Datei wurde ein Backup angelegt." -ForegroundColor Red
@@ -487,7 +497,7 @@ function UpdateLangFilesIfOutDate {
     }
 
     if ($langENConfig.langENConfigVersion -ne $langENFileVersion) {
-        # Umbenennen der vorhandenen englischen Sprachdatei mit einem zählenden Suffix
+        # Umbenennen der vorhandenen englischen Sprachdatei mit einem zählenden Suffix # Rename the existing English language file with a counting suffix
         $count = 0
         while (Test-Path $langENFile) {
             $count++
@@ -497,11 +507,11 @@ function UpdateLangFilesIfOutDate {
                 Rename-Item -Path $langENFile -NewName $newName
                 break
             }
-            Start-Sleep -Milliseconds 100  # Kurze Wartezeit
+            Start-Sleep -Milliseconds 100  # Kurze Wartezeit # Short waiting time
         }
         Start-Sleep -Seconds 1
-        # Erstellen einer neuen englischen Sprachdatei mit den Standardinhalten
-        Write-YamlENToFile -FilePath $langENFile
+        # Erstellen einer neuen englischen Sprachdatei mit den Standardinhalten # Create a new English language file with the standard content
+        New-YamlLangENFile -FilePath $langENFile
         Write-Host ""
         Write-Host "[DE] Die Datei: $langENFile entsprach nicht der benötigten Version und wurde daher neu erstellt." -ForegroundColor Red
         Write-Host "Von der ursprünglichen Datei wurde ein Backup angelegt." -ForegroundColor Red
@@ -510,52 +520,63 @@ function UpdateLangFilesIfOutDate {
     }
 }
 
-function set-Language {
+# Wählt die entsprechende Sprache aus # Selects the appropriate language
+function Select-Language {
     param (
         [string[]]$availableLanguages
     )
 
     $selectedLang = $null
     do {
+        # Die Konsole leeren # Clear the console
         Clear-Host
+        # Eingabeaufforderungen zur Sprachauswahl anzeigen # Display language selection prompts
         Write-Host "[DE] Bitte wählen Sie Ihre Sprache:" -ForegroundColor Yellow
         Write-Host "[EN] Please select your language:" -ForegroundColor Yellow
         Write-Host ""
+        # Verfügbare Sprachen anzeigen # Display available languages
         for ($i=0; $i -lt $availableLanguages.Count; $i++) {
             Write-Host "$i. $($availableLanguages[$i])" -ForegroundColor Cyan
         }
         Write-Host ""
+        # Eingabeaufforderung zur Sprachauswahl # Language selection input prompt
         Write-Host "[DE] Geben Sie die entsprechende Nummer ein und bestätigen Sie diese mit Enter."
         Write-Host "[EN] Type in the corresponding number and confirm with Enter."
         $userInput = Read-Host
+        # Prüfen Sie, ob die Eingabe im Bereich der verfügbaren Sprachen liegt. # Check if the input is within range of available languages
         if ($userInput -ge 0 -and $userInput -lt $availableLanguages.Count) {
             $selectedLang = $availableLanguages[$userInput]
         } else {
+            # Den Benutzer über eine ungültige Auswahl benachrichtigen # Notify the user about invalid selection
             Write-Host "[DE] Ungültige Auswahl." -ForegroundColor Red
             Write-Host "[EN] Invalid selection." -ForegroundColor Red
+            
+            # Kurz pausieren, bevor Sie fortfahren. # Pause briefly before continuing
             Start-Sleep -Seconds 1
         }
     } while ($null -eq $selectedLang)
+    # Rückgabe der ausgewählten Sprache # Return the selected language
     return $selectedLang
 }
 
-function create-WorkFolders {
+# Erstellt alle nörigen Ordner zur Bearbeitung der .gz und .log Dateien # Creates all necessary folders for editing the .gz and .log files
+function Initialize-FileProcessingFolders {
     param (
         [string]$sourceFolder,
         [string]$outputFolder,
         [string]$processedFolder
     )
 
-    # Erstellen der Ordner, falls sie nicht existieren
+    # Erstellen der Ordner, falls sie nicht existieren # Create the folders if they do not exist
     New-Item -ItemType Directory -Path $sourceFolder -Force | Out-Null
     New-Item -ItemType Directory -Path $outputFolder -Force | Out-Null
     New-Item -ItemType Directory -Path $processedFolder -Force | Out-Null
     New-Item -ItemType Directory -Path $processedFolderGz -Force | Out-Null
 
-    # Ausgabe der Meldung im Konsolenfenster
+    # Ausgabe der Meldung im Konsolenfenster # Output of the message in the console window
     Clear-Host
     Write-Host ($selectedLangConfig.lang_foldersCreatedMessage -f $sourceFolder) -ForegroundColor White
-    Write-Host " - $sourceFolder" -ForegroundColor Green  # Diese Zeile hinzufügen
+    Write-Host " - $sourceFolder" -ForegroundColor Green
     Write-Host " - $processedFolder" -ForegroundColor Green
     Write-Host " - $processedFolderGz" -ForegroundColor Green
     Write-Host " - $outputFolder" -ForegroundColor Green
@@ -563,16 +584,17 @@ function create-WorkFolders {
     Write-Host "$($selectedLangConfig.lang_filesAddedMessage -f $sourceFolder)" -ForegroundColor White
     Write-Host ""
     Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
-    [void][System.Console]::ReadKey() # Warten auf Tastendruck
+    [void][System.Console]::ReadKey() # Warten auf Tastendruck # Wait for button to be pressed
     Clear-Host
 }
 
-function missing-logFiles {
+# Weist auf das Fehlen von .gz oder .log Dateien im Ordner $sourceFolder hin # Indicates the absence of .gz or .log files in the $sourceFolder folder
+function Test-FilePresenceInSourceDirectoryByExtensionLogAndGz {
     param (
         [string]$sourceFolder
     )
 
-    # Ausgabe der Meldung im Konsolenfenster
+    # Ausgabe der Meldung im Konsolenfenster # Output of the message in the console window
     Clear-Host
     Write-Host "$($selectedLangConfig.lang_filesNotFoundMessage -f $sourceFolder)" -ForegroundColor White
     Write-Host " -> $sourceFolder" -ForegroundColor Cyan
@@ -580,29 +602,30 @@ function missing-logFiles {
     Write-Host $selectedLangConfig.lang_restartScriptMessage -ForegroundColor White
     Write-Host ""
     Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
-    [void][System.Console]::ReadKey() # Warten auf Tastendruck
+    [void][System.Console]::ReadKey() # Warten auf Tastendruck # Wait for button to be pressed
     Clear-Host
 }
 
-function filter-logFilesGz {
+# Entpackt die Log-Dateien aus den gz-Archiven # Extracts the log files from the gz archives
+function New-LogFilesFromGzArchive {
     param (
         [string]$outputFolder,
         [string]$processedFolderGz
     )
 
-    # Prüfen, ob $outputFolder existiert
+    # Prüfen, ob $outputFolder existiert # Check whether $outputFolder exists
     if (-not (Test-Path $outputFolder -PathType Container)) {
-        # Erstellen des Ordners, falls er nicht existiert
+        # Erstellen des Ordners, falls er nicht existiert # # Create the folder if it does not exist
         New-Item -ItemType Directory -Path $outputFolder -Force | Out-Null
     }
 
-    # Prüfen, ob $processedFolderGz existiert
+    # Prüfen, ob $processedFolderGz existiert # Check whether $processedFolderGz exists
     if (-not (Test-Path $processedFolderGz -PathType Container)) {
-        # Erstellen des Ordners, falls er nicht existiert
+        # Erstellen des Ordners, falls er nicht existiert # Create the folder if it does not exist
         New-Item -ItemType Directory -Path $processedFolderGz -Force | Out-Null
     }
 
-    # Meldung vor dem Verarbeiten der Log-Dateien anzeigen
+    # Meldung vor dem Verarbeiten der Log-Dateien anzeigen # Display message before processing the log files
     Clear-Host
     Write-Host $selectedLangConfig.lang_processingLogsMessage -ForegroundColor Yellow
     Write-Host $selectedLangConfig.lang_pleaseWaitMessage -ForegroundColor Yellow
@@ -612,33 +635,34 @@ function filter-logFilesGz {
 
 
 
-    # Liste alle .gz-Dateien im Quellordner auf
+    # Liste alle .gz-Dateien im Quellordner auf # List all .gz files in the source folder
     $gzFiles = Get-ChildItem -Path $sourceFolder -Filter "*.gz"
+    # [INT32]$gzCount = $gzFiles.Count
 
-    # Überprüfe, ob mindestens eine .gz-Datei vorhanden ist
+    # Überprüfe, ob mindestens eine .gz-Datei vorhanden ist # Check whether at least one .gz file exists (($($gzFiles.Count)))
     if ($gzFiles.Count -gt 0) {
-        Write-Output "Es sind $($gzFiles.Count) .gz-Dateien im Ordner vorhanden."
+        # Write-Output $selectedLangConfig.lang_newLogFilesFromGzArchive_countGzFilePart1 $gzCount $selectedLangConfig.lang_newLogFilesFromGzArchive_countGzFilePart2
 
-            # Liste alle .gz-Dateien im Quellordner auf
+            # Liste alle .gz-Dateien im Quellordner auf # List all .gz files in the source folder
             $gzFiles = Get-ChildItem -Path $sourceFolder -Filter "*.gz"
 
-            # Extrahiere und verschiebe jede .gz-Datei
+            # Extrahiere und verschiebe jede .gz-Datei # Extract and move each .gz file
             foreach ($gzFile in $gzFiles) {
-                # Bestimme den Dateinamen ohne Erweiterung
+                # Bestimme den Dateinamen ohne Erweiterung # Determine the file name without extension
                 $outputFileName = [System.IO.Path]::GetFileNameWithoutExtension($gzFile.Name)
 
-                # Definiere den vollständigen Pfad zur Ausgabedatei
+                # Definiere den vollständigen Pfad zur Ausgabedatei # Define the complete path to the output file
                 $outputFilePath = Join-Path -Path $sourceFolder -ChildPath $outputFileName
 
-                # Erstelle ein FileStream-Objekt für die .gz-Datei
-                $fileStream = [System.IO.File]::OpenRead($gzFile.FullName) # ToDo - Optional: Wenn schon vorhanden, Zahl an Namen anhängen
+                # Erstelle ein FileStream-Objekt für die .gz-Datei # Create a FileStream object for the .gz file
+                $fileStream = [System.IO.File]::OpenRead($gzFile.FullName) # Optional: Wenn schon vorhanden, Zahl an Namen anhängen
 
-                # Erstelle ein GZipStream-Objekt für die Dekomprimierung
+                # Erstelle ein GZipStream-Objekt für die Dekomprimierung # Create a GZipStream object for decompression
                 $gzipStream = [System.IO.Compression.GZipStream]::new($fileStream, [System.IO.Compression.CompressionMode]::Decompress)
 
 
 
-                # Definiere den vollständigen Pfad zur Ausgabedatei
+                # Definiere den vollständigen Pfad zur Ausgabedatei # Define the complete path to the output file
                 $outputFileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($outputFileName)
                 $extension = [System.IO.Path]::GetExtension($outputFileName)
                 $counter = 1
@@ -650,16 +674,16 @@ function filter-logFilesGz {
 
 
 
-                # Kopiere den Inhalt der GZip-Datei in die Ausgabedatei
+                # Kopiere den Inhalt der GZip-Datei in die Ausgabedatei # Copy the content of the GZip file into the output file
                 $gzipStream.CopyTo($outputFileStream)
 
-                # Schließe die Streams
+                # Schließe die Streams # Close the streams
                 $fileStream.Close()
                 $outputFileStream.Close()
                 $gzipStream.Close()
 
-                # Move-Item -Path $gzFile.FullName -Destination (Join-Path -Path $processedFolderGz -ChildPath $gzFile.Name) # ToDo Wenn schon vorhanden Zahl an Namen anhängen
-                # Verschiebe die .gz-Datei in den processedFolderGz
+                # Move-Item -Path $gzFile.FullName -Destination (Join-Path -Path $processedFolderGz -ChildPath $gzFile.Name) # Wenn schon vorhanden Zahl an Namen anhängen, siehe folgenden Code # If already present, append number to name, see following code
+                # Verschiebe die .gz-Datei in den processedFolderGz # Move the .gz file to the processedFolderGz
                 $destinationFileName = $gzFile.Name
                 $counter = 1
                 while (Test-Path (Join-Path -Path $processedFolderGz -ChildPath $destinationFileName)) {
@@ -672,49 +696,51 @@ function filter-logFilesGz {
             }
 
     } else {
-        Write-Output "Es sind keine .gz-Dateien im Ordner vorhanden."
+        Write-Output $selectedLangConfig.lang_newLogFilesFromGzArchive_noGzFilePart -ForegroundColor Yellow
     }
 }
 
-function filter-logFiles {
+# Diese Funktion filtert Log-Dateien nach bestimmten Schlüsselwörtern und speichert die gefilterten Einträge in separaten Dateien. Anschließend werden die verarbeiteten Dateien in einen Zielordner verschoben.
+# This function filters log files according to certain keywords and saves the filtered entries in separate files. The processed files are then moved to a target folder.
+function New-FilteredLogs {
     param (
         [string]$outputFolder,
         [string]$processedFolder
     )
 
-    # Prüfen, ob $outputFolder existiert
+    # Prüfen, ob $outputFolder existiert # Check whether $outputFolder exists
     if (-not (Test-Path $outputFolder -PathType Container)) {
-        # Erstellen des Ordners, falls er nicht existiert
+        # Erstellen des Ordners, falls er nicht existiert # Create the folder if it does not exist
         New-Item -ItemType Directory -Path $outputFolder -Force | Out-Null
     }
 
-    # Prüfen, ob $processedFolder existiert
+    # Prüfen, ob $processedFolder existiert # Check whether $processedFolder exists
     if (-not (Test-Path $processedFolder -PathType Container)) {
-        # Erstellen des Ordners, falls er nicht existiert
+        # Erstellen des Ordners, falls er nicht existiert # Create the folder if it does not exist
         New-Item -ItemType Directory -Path $processedFolder -Force | Out-Null
     }
 
-    # Meldung vor dem Verarbeiten der Log-Dateien anzeigen
+    # Meldung vor dem Verarbeiten der Log-Dateien anzeigen # Display message before processing the log files
     Clear-Host
     Write-Host $selectedLangConfig.lang_processingLogsMessage -ForegroundColor Yellow
     Write-Host $selectedLangConfig.lang_pleaseWaitMessage -ForegroundColor Yellow
     Write-Host ""
 
     
-    # Filtervorgang für jede Logdatei durchführen
+    # Filtervorgang für jede Logdatei durchführen # Perform filter process for each log file
     foreach ($sourceFile in $sourceFiles) {
         if ($sourceFile.Extension -eq ".log") {
-            # Pfad zur Log-Datei setzen
+            # Pfad zur Log-Datei setzen # Set path to the log file
             $sourceFilePath = $sourceFile.FullName
 
-            # Setze den Namen der Log-Datei und des Ausgabeverzeichnisses
+            # Setze den Namen der Log-Datei und des Ausgabeverzeichnisses # Set the name of the log file and the output directory
             $sourceFileName = [System.IO.Path]::GetFileNameWithoutExtension($sourceFile.Name)
 
-            # Setze den Filterzeitstempel neu
+            # Setze den Filterzeitstempel neu # Reset the filter timestamp
             $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
             $outputDirectory = New-Item -ItemType Directory -Path "$outputFolder\$sourceFileName`_-_gefiltert_am_$timestamp" -Force
 
-            # Initialisiere Zähler
+            # Initialisiere Zähler # Initialize counter
             $counter = @{
                 "ERROR" = 0
                 "WARN" = 0
@@ -726,7 +752,7 @@ function filter-logFiles {
                 "logged in with" = 0
             }
 
-            # Durchführen des Filtervorgangs und Zählen der gefundenen Schlagwörter
+            # Durchführen des Filtervorgangs und Zählen der gefundenen Schlagwörter # Execute the filter process and count the keywords found
             Get-Content $sourceFilePath | ForEach-Object -Begin {
                 $lineNumber = 0
             } -Process {
@@ -740,7 +766,7 @@ function filter-logFiles {
                 }
             }
 
-            # Ausgabe der verarbeiteten Dateinamen und der Anzahl der gefundenen Schlagwörter
+            # Ausgabe der verarbeiteten Dateinamen und der Anzahl der gefundenen Schlagwörter # Output of the processed file names and the number of keywords found
             Write-Host "$($selectedLangConfig.lang_processingFinishAMessage) '$($sourceFile.Name)' $($selectedLangConfig.lang_processingFinishBMessage)" -ForegroundColor Green
             Write-Host "    $($selectedLangConfig.lang_processingFinishFolderInfoMessage):" -ForegroundColor White
             Write-Host "     - $($processedFolder)\$($sourceFileName)" -ForegroundColor Cyan
@@ -751,7 +777,7 @@ function filter-logFiles {
             }
             Write-Host ""
 
-            # Verschieben der verarbeiteten Datei in den Zielordner mit Prüfung auf vorhandene Dateinamen
+            # Verschieben der verarbeiteten Datei in den Zielordner mit Prüfung auf vorhandene Dateinamen # Move the processed file to the target folder with check for existing file names
             $destination = "$processedFolder\$($sourceFile.Name)"
             $counterSuffix = 1
             while (Test-Path $destination) {
@@ -768,173 +794,152 @@ function filter-logFiles {
 
 
 
-# >>>>Variablen<<<<
-    # Pfad zum Skriptordner
-    $configFolder = "MinecraftLogFilter\"
-    # Pfad zur Konfigurationsdatei
-    $configFile = $configFolder + "config.yml"
+# >>>>Variablen<<<< # >>>>Variables<<<<
+# Pfad zum Skriptordner # Path to the script folder
+$configFolder = "MinecraftLogFilter\"
+# Pfad zur Konfigurationsdatei # Path to the configuration file
+$configFile = $configFolder + "config.yml"
 
-    # Liste der verfügbaren Sprachen
-    $availableLanguages = @("de", "en")
-    # Pfad zur Sprachkonfigurationsdatei für Deutsch
-    $langDEFile = $configFolder + "lang-de.yml"
-    # Pfad zur Sprachkonfigurationsdatei für Englisch
-    $langENFile = $configFolder + "lang-en.yml"
+# Liste der verfügbaren Sprachen # List of available languages
+$availableLanguages = @("de", "en")
+# Pfad zur Sprachkonfigurationsdatei für Deutsch # Path to the language configuration file for German
+$langDEFile = $configFolder + "lang-de.yml"
+# Pfad zur Sprachkonfigurationsdatei für Englisch # Path to the language configuration file for English
+$langENFile = $configFolder + "lang-en.yml"
 
-    # Aktuelle Versionsnummer und Repository-Daten von GitHub zum Abrufen der Versionsnummer aus der GitHub-API # Current version number and repository data from GitHub to retrieve the version number from the GitHub API
-    $currentVersion = "0.0.2-beta" # <----------- VERSION
-    $repoOwner = "RaptorXilef"
-    $repoName = "MinecraftLogFilterScript"
+# Aktuelle Versionsnummer und Repository-Daten von GitHub zum Abrufen der Versionsnummer aus der GitHub-API # Current version number and repository data from GitHub to retrieve the version number from the GitHub API
+$currentVersion = "0.0.2" # <----------- # ToDo Current Version
+$repoOwner = "RaptorXilef"
+$repoName = "MinecraftLogFilterScript"
 
-    # Versionsvariablen für die Konfigurationsdatei und die Sprachkonfigurationsdateien
-    $configFileVersion = "2"
-    $langDEFileVersion = "2"
-    $langENFileVersion = "2"
-
-
+# Versionsvariablen für die Konfigurationsdatei und die Sprachkonfigurationsdateien # Version variables for the configuration file and the language configuration files
+$configFileVersion = "2"
+$langDEFileVersion = "2"
+$langENFileVersion = "2"
 
 
-# >>>>Abrufen der Funktionen<<<<
-# Überprüfen, ob das Modul powershell-yaml installiert ist, wenn nicht, installiere es
+
+
+# >>>>Abrufen der Funktionen<<<< # >>>>Calling up the functions<<<<
+# Überprüfen, ob das Modul powershell-yaml installiert ist, wenn nicht, installiere es # Check if the powershell-yaml module is installed, if not, install it
 if (-not (Get-Module -Name powershell-yaml -ListAvailable)) {
     Write-Host "[DE] Das Modul 'powershell-yaml' wird benötigt um die config.yml zu lesen, welche die Filtereinstellungen enthält. Es wird jetzt installiert..." -ForegroundColor Yellow
     Write-Host "[EN] The module 'powershell-yaml' is needed to read the config.yml, which contains the filter settings. It will now be installed..." -ForegroundColor Yellow
     Install-Module -Name powershell-yaml -Force
 }
-# Importieren des Moduls powershell-yaml
+# Importieren des Moduls powershell-yaml # Import the powershell-yaml module
 Import-Module -Name powershell-yaml
 
-
+# Überprüfen, ob das Modul Microsoft.PowerShell.Archive installiert ist, wenn nicht, installiere es # Check if the Microsoft.PowerShell.Archive module is installed, if not, install it
 if (-not (Get-Module -Name Microsoft.PowerShell.Archive -ListAvailable)) {
     Write-Host "[DE] Das Modul 'Microsoft.PowerShell.Archive' wird benötigt um die LOG.gz Dateien zu lesen. Es wird jetzt installiert..." -ForegroundColor Yellow
     Write-Host "[EN] The module 'Microsoft.PowerShell.Archive' is required to read the LOG.gz files. It will now be installed..." -ForegroundColor Yellow
     Install-Module -Name Microsoft.PowerShell.Archive -Force
 }
-# Importieren des System.IO.Compression-Moduls für die Arbeit mit komprimierten Dateien
+# Importieren des System.IO.Compression-Moduls für die Arbeit mit komprimierten Dateien # Import the System.IO.Compression module for working with compressed files
 Import-Module -Name Microsoft.PowerShell.Archive
 
-# Prüfen, ob $configFolder existiert
+# Prüfen, ob $configFolder existiert # Check whether $configFolder exists
 if (-not (Test-Path $configFolder -PathType Container)) {
     $firstStartInput = $true
     Write-Host "[DE] Prüfe auf Updates. Bitte warten!" -ForegroundColor Green
     Write-Host "[EN] Check for updates. Please wait!" -ForegroundColor Green
     Write-Host ""
     Write-Host ""
-    #Prüfe auf Updates bevor das Skript das erste mal ausgeführt wird
-    CheckIfUpdateIsAvailable -firstStart $firstStartInput -currentVersion $currentVersion -repoOwner $repoOwner -repoName $repoName
+    # Prüfe auf Updates, bevor das Skript das erste Mal ausgeführt wird # Check for updates before running the script for the first time
+    Test-ForUpdateAvailability -firstStart $firstStartInput -currentVersion $currentVersion -repoOwner $repoOwner -repoName $repoName
     Start-Sleep -Seconds 3
-    # Erstellen des Ordners, falls er nicht existiert
+    # Erstellen des Ordners, falls er nicht existiert # Create the folder if it does not exist
     New-Item -ItemType Directory -Path $configFolder -Force | Out-Null
 } else {
     $firstStartInput = $false
 }
 
-# Prüfen, ob die Sprachkonfigurationsdatei für Deutsch existiert, andernfalls erstellen
+# Prüfen, ob die Sprachkonfigurationsdatei für Deutsch existiert, andernfalls erstellen # Check whether the language configuration file for German exists, otherwise create it
 if (-not (Test-Path $langDEFile -PathType Leaf)) {
-    Write-YamlDEToFile -FilePath $langDEFile
+    New-YamlLangDEFile -FilePath $langDEFile
 }
 
-# Prüfen, ob die Sprachkonfigurationsdatei für Englisch existiert, andernfalls erstellen
+# Prüfen, ob die Sprachkonfigurationsdatei für Englisch existiert, andernfalls erstellen # Check whether the language configuration file for English exists, otherwise create it
 if (-not (Test-Path $langENFile -PathType Leaf)) {
-    Write-YamlENToFile -FilePath $langENFile
+    New-YamlLangENFile -FilePath $langENFile
 }
 
-# Laden der Sprachkonfiguration für Deutsch
+# Laden der Sprachkonfiguration für Deutsch # Load the language configuration for German
 $langDEConfig = Get-Content $langDEFile | ConvertFrom-Yaml
-# Laden der Sprachkonfiguration für Englisch
+# Laden der Sprachkonfiguration für Englisch # Load the language configuration for English
 $langENConfig = Get-Content $langENFile | ConvertFrom-Yaml
 
 if ($langDEConfig.langDEConfigVersion -ne $langDEFileVersion -or $langENConfig.langENConfigVersion -ne $langENFileVersion) {
-    # Aufruf der Funktion für die Aktualisierung der Sprachdateien bei nicht Übereinstimmung der Versionsnummer
-    UpdateLangFilesIfOutDate -configFolder $configFolder -langDEFile $langDEFile -langENFile $langENFile -langDEFileVersion $langDEFileVersion -langENFileVersion $langENFileVersion
+    # Aufruf der Funktion für die Aktualisierung der Sprachdateien bei nicht Übereinstimmung der Versionsnummer # Call the function for updating the language files if the version number does not match
+    Update-LanguageFiles -configFolder $configFolder -langDEFile $langDEFile -langENFile $langENFile -langDEFileVersion $langDEFileVersion -langENFileVersion $langENFileVersion
     $langDEConfig = Get-Content $langDEFile | ConvertFrom-Yaml
     $langENConfig = Get-Content $langENFile | ConvertFrom-Yaml
 }
 
-# Create config-file
+# Konfigurationsdatei erstellen # Create config-file
 if (-not (Test-Path $configFile -PathType Leaf)) {
     # set Language # Wähle Sprache
-    $selectedLang = set-Language -availableLanguages $availableLanguages
-    Write-YamlConfigToFile -FilePath $configFile
+    $selectedLang = Select-Language -availableLanguages $availableLanguages
+    New-YamlConfigFile -FilePath $configFile
 
-    & $MyInvocation.MyCommand.Path # Skript erneut starten
+    & $MyInvocation.MyCommand.Path # Skript erneut starten # Restart the script
     EXIT
 }
 
-# Laden der ausgewählten Sprachkonfiguration basierend auf der Sprache in der config.yml
+# Laden der ausgewählten Sprachkonfiguration basierend auf der Sprache in der config.yml # Load the selected language configuration based on the language in config.yml
 $config = Get-Content $configFile | ConvertFrom-Yaml
 $lang = $config.lang
 $selectedLangConfig = if ($lang -eq "de") { $langDEConfig } elseif  ($lang -eq "en") { $langENConfig } else {$langENConfig}
 
-# Festlegen der Variablen für Pfade aus der Konfiguration
+# Festlegen der Variablen für Pfade aus der Konfiguration # Define the variables for paths from the configuration
 $sourceFolder = $configFolder + $config.sourceFolder
 $outputFolder = $configFolder + $config.outputFolder
 $processedFolder = $configFolder + $config.processedFolder
 $processedFolderGz = $configFolder + $config.processedFolderGz
 
-# Prüfen, ob $sourceFolder existiert
+# Prüfen, ob $sourceFolder existiert # Check whether $sourceFolder exists
 if (-not (Test-Path $sourceFolder -PathType Container)) {
-    create-WorkFolders -sourceFolder $sourceFolder -outputFolder $outputFolder -processedFolder $processedFolder
-    & $MyInvocation.MyCommand.Path # Skript erneut starten
+    Initialize-FileProcessingFolders -sourceFolder $sourceFolder -outputFolder $outputFolder -processedFolder $processedFolder
+    & $MyInvocation.MyCommand.Path # Skript erneut starten # Restart the script
     EXIT
 } else {
-    # Erfassen aller Dateien im $sourceFolder
+    # Erfassen aller Dateien im $sourceFolder # Capture all files in the $sourceFolder
     $sourceFiles = Get-ChildItem -Path $sourceFolder -File
-    # Filtern der Dateien, um nur diejenigen mit der Endung ".log" und ".gz" beizubehalten
+    # Filtern der Dateien, um nur diejenigen mit der Endung ".log" und ".gz" beizubehalten # Filter the files to keep only those with the extension ".log" and ".gz"
     $sourceFiles = $sourceFiles | Where-Object { $_.Extension -eq ".log" -or $_.Extension -eq ".gz" }
     if ($sourceFiles.Count -eq 0) {
-        missing-logFiles -sourceFolder $sourceFolder
-        & $MyInvocation.MyCommand.Path # Skript erneut starten
+        Test-FilePresenceInSourceDirectoryByExtensionLogAndGz -sourceFolder $sourceFolder
+        & $MyInvocation.MyCommand.Path # Skript erneut starten # Restart the script
         EXIT
     } else {
-        # Erfassen aller GZ-Dateien im $sourceFolder
+        # Erfassen aller GZ-Dateien im $sourceFolder # Capture all GZ files in the $sourceFolder
         $sourceFiles = Get-ChildItem -Path $sourceFolder -File
-        # Filtern der Dateien, um nur diejenigen mit der Endung ".log" und ".gz" beizubehalten
+        # Filtern der Dateien, um nur diejenigen mit der Endung ".log" und ".gz" beizubehalten # Filter the files to keep only those with the extension ".log" and ".gz"
         $sourceFiles = $sourceFiles | Where-Object { $_.Extension -eq ".gz" }
         
-        # Filtert die Log-Dateien und gibt das Ergebnis aus
-        filter-logFilesGz -outputFolder $outputFolder -processedFolderGz $processedFolderGz
+        # Filtert die Log-Dateien und gibt das Ergebnis aus # Filters the log files and outputs the result
+        New-LogFilesFromGzArchive -outputFolder $outputFolder -processedFolderGz $processedFolderGz
 
-        # Erfassen aller Log-Dateien im $sourceFolder
+        # Erfassen aller Log-Dateien im $sourceFolder # Capture all log files in the $sourceFolder
         $sourceFiles = Get-ChildItem -Path $sourceFolder -File
-        # Filtern der Dateien, um nur diejenigen mit der Endung ".log" und ".gz" beizubehalten
+        # Filtern der Dateien, um nur diejenigen mit der Endung ".log" und ".gz" beizubehalten # Filter the files to keep only those with the extension ".log" and ".gz"
         $sourceFiles = $sourceFiles | Where-Object { $_.Extension -eq ".log" }
 
-        filter-logFiles -outputFolder $outputFolder -processedFolder $processedFolder
-        # Ausgabe der Abschlussmeldung
+        New-FilteredLogs -outputFolder $outputFolder -processedFolder $processedFolder
+        # Ausgabe der Abschlussmeldung # Output of the final message
         Write-Host "" -ForegroundColor White
         Write-Host $selectedLangConfig.lang_scriptFinishedMessage -ForegroundColor Red
         Write-Host ""
         Write-Host ""
         Write-Host ""
         if ($config.searchForUpdates -eq "true") {
-            CheckIfUpdateIsAvailable -firstStart $firstStartInput -currentVersion $currentVersion -repoOwner $repoOwner -repoName $repoName
+            # Suche nach Update # Search for update
+            Test-ForUpdateAvailability -firstStart $firstStartInput -currentVersion $currentVersion -repoOwner $repoOwner -repoName $repoName
         }
-        [void][System.Console]::ReadKey() # Warten auf Tastendruck
-        # Suche nach Update
-        & $MyInvocation.MyCommand.Path # Skript erneut starten
+        [void][System.Console]::ReadKey() # Warten auf Tastendruck # Wait for button to be pressed
+        & $MyInvocation.MyCommand.Path # Skript erneut starten # Restart the script
         EXIT
     }
 }
 EXIT
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
