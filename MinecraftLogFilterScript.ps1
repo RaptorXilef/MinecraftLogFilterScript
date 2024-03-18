@@ -128,9 +128,9 @@ function Test-ForUpdateAvailability {
                 $versionSurfixValueAsNumber = [Int32]"3"
             } elseif ($versionSurfix -eq "release_candidate") {
                 $versionSurfixValueAsNumber = [Int32]"3"
-            } elseif ($versionSurfix -eq "stabile") {
+            } elseif ($versionSurfix -eq "stable") {
                 $versionSurfixValueAsNumber = [Int32]"4"
-            } elseif ($versionSurfix -eq "stabile_version") {
+            } elseif ($versionSurfix -eq "stable_version") {
                 $versionSurfixValueAsNumber = [Int32]"4"
             } elseif ($versionSurfix -eq "") {
                 $versionSurfixValueAsNumber = [Int32]"5"
