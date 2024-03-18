@@ -253,9 +253,9 @@ function Test-ForUpdateAvailability {
     $currentVersion, $currentVersionSurfix = Split-VersionAndSuffix -version $currentVersion
     $lastVersion, $lastVersionSurfix = Split-VersionAndSuffix -version $lastVersion
 
-    # Setzt die Versionsbezeichnung auf stabile wenn diese nicht gesetzt wurde # Sets the version designation to stabile if this has not been set
-    if ($currentVersionSurfix) {} else {$currentVersionSurfix = "stabile"}
-    if ($lastVersionSurfix) {} else {$lastVersionSurfix = "stabile"}
+    # Setzt die Versionsbezeichnung auf stabile wenn diese nicht gesetzt wurde # Sets the version designation to stable if this has not been set
+    if ($currentVersionSurfix) {} else {$currentVersionSurfix = "stable"}
+    if ($lastVersionSurfix) {} else {$lastVersionSurfix = "stable"}
 
     # Entfernen des "v" vom Anfang des Strings, wenn es existiert # Remove the "v" from the beginning of the string if it exists
     $currentVersion = Remove-VPrefix -version $currentVersion
