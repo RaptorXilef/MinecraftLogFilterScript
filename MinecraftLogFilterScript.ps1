@@ -383,7 +383,8 @@ lang_scriptFinishedMessage: "You can now close the console window or restart it 
 # Erstellt die config.yml mit Inhalt # Creates the config.yml with content
 function New-YamlConfigFile {
     param (
-        [string]$FilePath
+        [string]$FilePath,
+        [string]$selectedLang
     )
 
     # Konfigurationsdatei mit ausgewählter Sprache erstellen # Create configuration file with selected language
@@ -462,7 +463,7 @@ keywords:
         Write-Host $selectedLangConfig.lang_pressAnyKeyContinueMessage -ForegroundColor Red
         [void][System.Console]::ReadKey() # Warten auf Tastendruck # Wait for button to be pressed
         Clear-Host
-}
+    }
 
 # Aktuallisiert die lang-?.yml # Updates the lang-?.yml
 function Update-LanguageFiles {
@@ -479,7 +480,7 @@ function Update-LanguageFiles {
         $count = 0
         while (Test-Path $langDEFile) {
             $count++
-            $newName = "lang-de-old$count.yml"
+            $newName = "lang-de-old_$count.yml"
             # Write-Host "$configFolder$newName" -ForegroundColor GREEN # ? Zur Fehleranalyse
             if (-not (Test-Path $configFolder$newName)) {
                 Rename-Item -Path $langDEFile -NewName $newName
@@ -491,11 +492,14 @@ function Update-LanguageFiles {
         Start-Sleep -Seconds 1
         # Erstellen einer neuen deutschen Sprachdatei mit den Standardinhalten # Create a new German language file with the standard content
         New-YamlLangDEFile -FilePath $langDEFile
+        Clear-Host
         Write-Host ""
         Write-Host "[DE] Die Datei: $langDEFile entsprach nicht der benötigten Version und wurde daher neu erstellt." -ForegroundColor Red
         Write-Host "Von der ursprünglichen Datei wurde ein Backup angelegt." -ForegroundColor Red
         Write-Host "[EN] The file: $langDEFile did not correspond to the required version and was therefore recreated." -ForegroundColor Red
         Write-Host "A backup of the original file was created." -ForegroundColor Red
+        Write-Host ""
+        Start-Sleep -Seconds 3
     }
 
     if ($langENConfig.langENConfigVersion -ne $langENFileVersion) {
@@ -503,7 +507,7 @@ function Update-LanguageFiles {
         $count = 0
         while (Test-Path $langENFile) {
             $count++
-            $newName = "lang-en-old$count.yml"
+            $newName = "lang-en-old_$count.yml"
             # Write-Host "$configFolder$newName" -ForegroundColor GREEN # ? Zur Fehleranalyse
             if (-not (Test-Path $configFolder$newName)) {
                 Rename-Item -Path $langENFile -NewName $newName
@@ -514,11 +518,52 @@ function Update-LanguageFiles {
         Start-Sleep -Seconds 1
         # Erstellen einer neuen englischen Sprachdatei mit den Standardinhalten # Create a new English language file with the standard content
         New-YamlLangENFile -FilePath $langENFile
+        Clear-Host
         Write-Host ""
         Write-Host "[DE] Die Datei: $langENFile entsprach nicht der benötigten Version und wurde daher neu erstellt." -ForegroundColor Red
         Write-Host "Von der ursprünglichen Datei wurde ein Backup angelegt." -ForegroundColor Red
         Write-Host "[EN] The file: $langENFile did not correspond to the required version and was therefore recreated." -ForegroundColor Red
         Write-Host "A backup of the original file was created." -ForegroundColor Red
+        Write-Host ""
+        Start-Sleep -Seconds 3
+    }
+}
+
+# Aktuallisiert die config.yml # Updates the config.yml
+function Update-ConfigFile {
+    param (
+        [string]$configFolder,
+        [string]$configFile,
+        [string]$configFileVersion
+    )
+
+    if ($config.configVersion -ne $configFileVersion) {
+        # Umbenennen der vorhandenen Konfigurationsdatei mit einem zählenden Suffix # Rename the existing config file with a counting suffix
+        $count = 0
+        while (Test-Path $configFile) {
+            $count++
+            $newName = "config_$count.yml"
+            # Write-Host "$configFolder$newName" -ForegroundColor GREEN # ? Zur Fehleranalyse
+            if (-not (Test-Path $configFolder$newName)) {
+                Rename-Item -Path $configFile -NewName $newName
+                break
+            }
+            Start-Sleep -Milliseconds 100  # Kurze Wartezeit # Short waiting time
+        }
+        
+        Start-Sleep -Seconds 1
+        # Erstellen einer neuen Konfigurationsdatei mit den Standardinhalten # Create a new config file with the standard content
+        $selectedLang = Select-Language -availableLanguages $availableLanguages
+        Clear-Host
+        Write-Host ""
+        Write-Host "[DE] Die Datei: $configFile entsprach nicht der benötigten Version und wurde daher neu erstellt." -ForegroundColor Red
+        Write-Host "Von der ursprünglichen Datei wurde ein Backup angelegt." -ForegroundColor Red
+        Write-Host "[EN] The file: $configFile did not correspond to the required version and was therefore recreated." -ForegroundColor Red
+        Write-Host "A backup of the original file was created." -ForegroundColor Red
+
+        Write-Host ""
+        Start-Sleep -Seconds 3
+        New-YamlConfigFile -FilePath $configFile -selectedLang $selectedLang
     }
 }
 
@@ -810,7 +855,7 @@ $langDEFile = $configFolder + "lang-de.yml"
 $langENFile = $configFolder + "lang-en.yml"
 
 # Aktuelle Versionsnummer und Repository-Daten von GitHub zum Abrufen der Versionsnummer aus der GitHub-API # Current version number and repository data from GitHub to retrieve the version number from the GitHub API
-$currentVersion = "0.0.2" # <----------- # ToDo Current Version
+$currentVersion = "0.0.3" # <----------- # ToDo Current Version
 $repoOwner = "RaptorXilef"
 $repoName = "MinecraftLogFilterScript"
 
@@ -883,14 +928,22 @@ if ($langDEConfig.langDEConfigVersion -ne $langDEFileVersion -or $langENConfig.l
 if (-not (Test-Path $configFile -PathType Leaf)) {
     # set Language # Wähle Sprache
     $selectedLang = Select-Language -availableLanguages $availableLanguages
-    New-YamlConfigFile -FilePath $configFile
+    New-YamlConfigFile -FilePath $configFile -selectedLang $selectedLang
 
     & $MyInvocation.MyCommand.Path # Skript erneut starten # Restart the script
     EXIT
 }
 
-# Laden der ausgewählten Sprachkonfiguration basierend auf der Sprache in der config.yml # Load the selected language configuration based on the language in config.yml
+# Laden der Konfiguration # Load the configuration
 $config = Get-Content $configFile | ConvertFrom-Yaml
+
+if ($config.configVersion -ne $configFileVersion) {
+    # Aufruf der Funktion für die Aktualisierung der Konfigurationsdatei bei nicht Übereinstimmung der Versionsnummer # Call the function for updating the config files if the version number does not match
+    Update-ConfigFile -configFolder $configFolder -configFile $configFile -configFileVersion $configFileVersion 
+    $config = Get-Content $configFile | ConvertFrom-Yaml
+}
+
+# Laden der ausgewählten Sprachkonfiguration basierend auf der Sprache in der config.yml # Load the selected language configuration based on the language in config.yml
 $lang = $config.lang
 $selectedLangConfig = if ($lang -eq "de") { $langDEConfig } elseif  ($lang -eq "en") { $langENConfig } else {$langENConfig}
 
