@@ -401,19 +401,21 @@ lang: "$selectedLang"
 # Aktiviert oder deaktiviert die Suche nach Updates.
 # default: "true"   -> to activate the update search. "false" to deactivate.
 # Activates or deactivates the search for updates.
-#Standart: "true"   -> zum aktivieren der Updatesuche. "false" zum deaktivieren.
+# Standart: "true"   -> zum aktivieren der Updatesuche. "false" zum deaktivieren.
 searchForUpdates: "true"
 
 # Folder name of the folder containing the files to be filtered.
 # default: "to_filter"
+# Alternatively: for the directory in which the MinecraftLogFilter.ps1 is executed: "../"
 # Ordnername des Ordners, welcher die zu filternden Dateien enthält.
-#Standart: sourceFolder: "zu_filtern"
+# Standart: "zu_filtern"
+# Alternativ: für das Verzeichnis in welchem die MinecraftLogFilter.ps1 ausgeführt wird: "../"
 sourceFolder: "zu_filtern"
 
 # Destination folder for the filtered files.
 # default: "filtered"
 # Zielordner für die gefilterten Dateien.
-#Standart: "gefiltert"
+# Standart: "gefiltert"
 outputFolder: "gefiltert"
 
 # Folder for the files that have already been processed.
@@ -813,7 +815,7 @@ $repoOwner = "RaptorXilef"
 $repoName = "MinecraftLogFilterScript"
 
 # Versionsvariablen für die Konfigurationsdatei und die Sprachkonfigurationsdateien # Version variables for the configuration file and the language configuration files
-$configFileVersion = "2"
+$configFileVersion = "3"
 $langDEFileVersion = "2"
 $langENFileVersion = "2"
 
