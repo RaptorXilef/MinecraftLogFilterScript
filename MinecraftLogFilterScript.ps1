@@ -432,10 +432,10 @@ processedFolder: "verarbeitetLog"
 processedFolderGz: "verarbeitetGz"
 
 # Keywords that are used for filtering.
-# Important! Special characters such as : ; [ ] { } " ' must not be included in the filter term!
+# Important! Special characters such as : ; [] {} " ' must not be included in the filter term!
 # default: ERROR, WARN, not found, update, version, joined the game, logged in with, left the game
 # Schlagwörter, nach denen gefiltert wird.
-# Wichtig! Sonderzeichen wie : ; [ ] { } " ' dürfen nicht im Filterbegriff enthalten sein!
+# Wichtig! Sonderzeichen wie : ; [] {} " ' dürfen nicht im Filterbegriff enthalten sein!
 # Standart sind: ERROR, WARN, not found, update, version, joined the game, logged in with, left the game, issued server command:
 keywords:
     - WARN

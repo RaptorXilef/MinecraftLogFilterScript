@@ -141,7 +141,7 @@ function CheckIfUpdateIsAvailable {
         }
     }
 
-    # ToDo Übersetzungen in lang-?.yml einbauen
+    # TODO Übersetzungen in lang-?.yml einbauen
     # Definition der Funktion CheckForUpdate zum Ausgeben, ob ein Update verfügbar ist, oder nicht. # Definition of the CheckForUpdate function to output whether an update is available or not.
     function Test-UpdateAvailableWithConfig($currentVersion, $lastVersion, $repoOwner, $repoName) {
         $releaseUrl = "https://github.com/$repoOwner/$repoName/releases/latest"
